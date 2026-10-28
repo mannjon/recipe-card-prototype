@@ -175,6 +175,11 @@
        shadow at all: they sit flat on the field, one solid piece
        with the page. */
     .toolbar.is-stuck .tab { box-shadow: 0 5px 3.75px rgba(0, 0, 0, .75); }
+    /* Stuck only: the container blurs whatever is behind it, so
+       content scrolling under the pinned bar softens instead of
+       showing through sharp. No background color is added — the
+       blur is the whole effect, across the container's own box. */
+    .toolbar.is-stuck { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
     /* In the Cookbook the sticky toolbar is not shown at all:
        it would float over the top of the book's content. The tabs
        themselves live at the top of the pad instead — the same
@@ -241,11 +246,12 @@
     body[data-view="shop"] { --tabc: #e2725b; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="plan"] { --tabc: #2a7f76; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="cook"] { --tabc: #8a7a6d; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
-    /* Nothing sits behind the tabs: the sticky wrapper stays
-       transparent in every state, so the buttons float on the black
-       field and over content scrolling beneath them. Their only
-       shadow is the stuck-only drop shadow on the buttons
-       themselves, above. */
+    /* No colored bar sits behind the tabs: the sticky wrapper has
+       no background in any state, so the buttons float on the black
+       field and over content scrolling beneath them. Their shadow
+       is the stuck-only drop shadow on the buttons themselves, and
+       while stuck the container blurs the content behind it (see
+       .toolbar.is-stuck above) — blur only, never a filled tray. */
     body[data-view] .toolbar { touch-action: pan-y; }
     body[data-view] .intro h1 { color: var(--tabc-ink); }
     body[data-view] .lede { color: var(--tabc-muted); }
@@ -1012,13 +1018,13 @@
     .pantry-confirm-text { flex: 1 1 100%; font-size: .78rem; font-weight: 600; line-height: 1.4; }
     .pantry-confirm-yes { background: var(--rust); color: #fffdf7; border: 0; border-radius: 6px; padding: 6px 13px; font-weight: 600; font-size: .76rem; cursor: pointer; }
     .pantry-confirm-no { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 6px 13px; font-weight: 600; font-size: .76rem; cursor: pointer; }
-    /* Nuke pantry: a comical launch console at the top of the pantry.
+    /* Nuke pantry: a comical launch console at the bottom of the pantry.
        A hazard-striped safety cover flips off the big red button with a
        flick (or a tap); pressing the button nukes the whole inventory
        at once — opening the cover then pressing is the whole sequence.
        The console is dark machinery in both color schemes — that's the
        joke, and it keeps the red red. */
-    .nuke-zone { position: relative; margin-bottom: 22px; border-radius: 6px; overflow: hidden; background: #262019; color: #f7efdd; border: 1px solid #171310; box-shadow: var(--shadow); }
+    .nuke-zone { position: relative; margin-top: 26px; border-radius: 6px; overflow: hidden; background: #262019; color: #f7efdd; border: 1px solid #171310; box-shadow: var(--shadow); }
     .nuke-stripes { height: 14px; background: repeating-linear-gradient(-45deg, #f2b705 0 16px, #1d1a16 16px 32px); }
     .nuke-body { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; padding: 20px 22px 22px; }
     .nuke-copy { flex: 1 1 300px; min-width: 0; }
@@ -1055,11 +1061,23 @@
     .nuke-cover:focus-visible { outline: 3px solid #f2b705; outline-offset: 3px; }
     .nuke-caption { font-size: .72rem; font-weight: 600; letter-spacing: .3em; margin-right: -.3em; color: #bdb29a; text-transform: uppercase; }
     .pantry.is-detonating .nuke-zone { animation: nuke-shake .55s ease; }
-    .pantry.is-detonating .nuke-zone::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 78% 50%, #fff6d8, #ffb03a 45%, rgba(224,52,28,0) 75%); animation: nuke-flash .55s ease-out forwards; pointer-events: none; }
-    @keyframes nuke-flash { from { opacity: .95; } to { opacity: 0; } }
+    /* The blast itself: a white sheet fixed over the whole screen.
+       It radiates out from the center — a circle growing from the
+       middle until the screen is totally white — holds the white-out
+       for a brief moment, then fades away to the normal interface.
+       It sits under the toast (z-index 20) on purpose: the message
+       with the wiped total stays readable over the white. It never
+       takes touches. */
+    .nuke-blast { position: fixed; inset: 0; z-index: 15; background: #fff; pointer-events: none; animation: nuke-blast 1.15s ease-out forwards; }
+    @keyframes nuke-blast {
+      0% { clip-path: circle(0% at 50% 50%); opacity: 1; }
+      30% { clip-path: circle(150% at 50% 50%); opacity: 1; }
+      60% { clip-path: circle(150% at 50% 50%); opacity: 1; }
+      100% { clip-path: circle(150% at 50% 50%); opacity: 0; }
+    }
     @keyframes nuke-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px) rotate(-.4deg); } 45% { transform: translateX(6px); } 70% { transform: translateX(-4px); } }
     @media (max-width: 640px) { .nuke-body { justify-content: center; text-align: center; } .nuke-console { margin-left: 0; } .nuke-sub { margin-left: auto; margin-right: auto; } }
-    @media (prefers-reduced-motion: reduce) { .nuke-cover { transition: none; } .nuke-btn { transition: none; } .pantry.is-detonating .nuke-zone { animation: none; } .pantry.is-detonating .nuke-zone::after { animation: none; opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .nuke-cover { transition: none; } .nuke-btn { transition: none; } .pantry.is-detonating .nuke-zone { animation: none; } .nuke-blast { animation: none; opacity: 0; } }
     .builder {
       margin-top: 26px; background: var(--paper); border: 1px solid var(--line);
       border-radius: 6px; padding: 20px 20px 18px; box-shadow: var(--shadow);
@@ -1889,7 +1907,15 @@
           const index = hookCursor++;
           if (!(index in hooks)) hooks[index] = initial;
           return [hooks[index], function (next) {
-            hooks[index] = typeof next === 'function' ? next(hooks[index]) : next;
+            const value = typeof next === 'function' ? next(hooks[index]) : next;
+            /* Handed the value already held, nothing has changed,
+               so the redraw is skipped. Several updaters return the
+               current value to say exactly that (a duplicate list
+               line, a removal that matched nothing), and rebuilding
+               the whole page for them is pure cost — cost a phone
+               pays in frozen seconds when it piles up. */
+            if (value === hooks[index]) return;
+            hooks[index] = value;
             renderRoot();
           }];
         },
@@ -6829,7 +6855,7 @@
           clearPantryFilters();
           setNukeStage('covered');
           setNukeFlash(true);
-          setTimeout(function(){setNukeFlash(false);},700);
+          setTimeout(function(){setNukeFlash(false);},1200);
           announce('Pantry nuked — '+nukeTotal+' item'+(nukeTotal===1?'':'s')+' gone');
         }
         /* --- Inventory builder -------------------------------------------
@@ -7181,10 +7207,30 @@
           moveEntryIntoSlot(entry,slotKey);
         }
         const plannedCount=Object.keys(weekPlan).filter(function(k){return weekPlan[k];}).length;
+        /* The week re-flows only when the number of day tiles per
+           row actually changes. Two guards keep that cheap:
+           - The window listener is registered ONCE, guarded by
+             weekResizeWatch. This renderer's effects run again on
+             every redraw, so an unguarded registration piled one
+             more permanent listener onto the window per redraw —
+             and adding meals is redraw after redraw. On a phone,
+             scrolling fires window resizes constantly (the address
+             bar slides in and out), and each one woke EVERY piled-up
+             listener, each ordering a full page rebuild: the tab
+             drowned in its own rebuilds and stopped answering.
+           - The listener reports only a REAL change: same column
+             count as last time, no state write, no rebuild. */
+        const weekResizeWatch = React.useRef(null);
         React.useEffect(function(){
-          function onResize(){setWeekCols(weekColumnCount());}
-          window.addEventListener('resize',onResize);
-          return function(){window.removeEventListener('resize',onResize);};
+          if (weekResizeWatch.current) return;
+          const watch = { last: weekCols };
+          weekResizeWatch.current = watch;
+          window.addEventListener('resize', function(){
+            const n = weekColumnCount();
+            if (n === watch.last) return;
+            watch.last = n;
+            setWeekCols(n);
+          });
         },[]);
         React.useEffect(function(){const el=document.getElementById('toast'); if(el){el.textContent=toast; el.classList.toggle('show',!!toast);}},[toast]);
         React.useEffect(function(){
@@ -7372,7 +7418,7 @@
             );
           }):h('p',{className:'inv-lines-note'},'No lines yet — add the first one above and it shows up here, and in its pantry group below.')
         );
-        /* Nuke Pantry console: sits at the very top of the pantry. The
+        /* Nuke Pantry console: sits at the very bottom of the pantry. The
            cover starts down over the button; flicking (or tapping) it
            flips it up and arms the button; pressing the button nukes
            the pantry at once. An empty pantry disables the whole rig. */
@@ -7865,7 +7911,7 @@
           shopListSection
         );
         const pantrySection=h('div',{className:'pantry'+(nukeFlash?' is-detonating':'')},
-          nukeZone,
+          nukeFlash?h('div',{className:'nuke-blast','aria-hidden':'true'}):null,
           h('div',{className:'pantry-head'},
             h('input',{className:'search-input',id:'pantry-search',type:'search',placeholder:'Search the pantry\u2026','aria-label':'Search the pantry',autocomplete:'off',value:pantryQuery,onInput:function(e){pantryFocus.current=true;setPantryQuery(e.target.value);}}),
             h('button',{className:'filter-toggle',type:'button','aria-label':pantryFilterCount?('Pantry filters, '+pantryFilterCount+' active'):'Pantry filters','aria-expanded':pantryFiltersOpen,'aria-controls':'pantry-filters',onClick:function(){setPantryFiltersOpen(!pantryFiltersOpen);}},'Filters',pantryFilterCount?h('span',{className:'filter-count','aria-hidden':'true'},pantryFilterCount+' on'):null),
@@ -7950,7 +7996,8 @@
             )
           ),
           builderOpen?builderSection:null,
-          (builderOpen||invLines.length)?linesSection:null
+          (builderOpen||invLines.length)?linesSection:null,
+          nukeZone
         );
         /* Week grid pieces. A day tile never changes size or splits:
            opening a day inserts renderDayExpansion's full-width row
