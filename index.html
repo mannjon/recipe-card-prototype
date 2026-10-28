@@ -154,10 +154,10 @@
     .count-stamp span { color: var(--muted); font-size: .78rem; margin-top: 5px; }
     /* The main tabs stick to the top of the viewport while the page
        scrolls, so switching sections never means scrolling back up
-       first. There is NO bar behind them: the sticky wrapper is fully
-       transparent — no background, no tray, no border — and each tab
-       is its own separate floating button in its own color, sitting
-       directly on the page's color. */
+       first. Behind them sits a container a bit taller than the tabs
+       themselves, filled with just black transparency at around 40%:
+       a plain semi-transparent black, no pattern.
+       Each tab is still its own separate button in its own color. */
     .toolbar {
       position: sticky;
       top: 0;
@@ -166,8 +166,9 @@
       align-items: center;
       gap: 16px;
       margin: 20px 0 22px;
-      padding: 8px 0;
-      background: transparent;
+      padding: 16px 14px;
+      border-radius: 5px;
+      background-color: rgba(0, 0, 0, .4);
     }
     /* Stuck state: the drop shadow lives on the floating tab BUTTONS
        themselves — dropped 5px, spread softened to 3.75px (75% of
@@ -175,10 +176,9 @@
        shadow at all: they sit flat on the field, one solid piece
        with the page. */
     .toolbar.is-stuck .tab { box-shadow: 0 5px 3.75px rgba(0, 0, 0, .75); }
-    /* Stuck only: the container blurs whatever is behind it, so
-       content scrolling under the pinned bar softens instead of
-       showing through sharp. No background color is added — the
-       blur is the whole effect, across the container's own box. */
+    /* Stuck only: the container also blurs whatever is behind it, so
+       content scrolling under the pinned bar softens behind the
+       black transparency instead of showing through sharp. */
     .toolbar.is-stuck { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
     /* In the Cookbook the sticky toolbar is not shown at all:
        it would float over the top of the book's content. The tabs
@@ -246,12 +246,12 @@
     body[data-view="shop"] { --tabc: #e2725b; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="plan"] { --tabc: #2a7f76; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="cook"] { --tabc: #8a7a6d; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
-    /* No colored bar sits behind the tabs: the sticky wrapper has
-       no background in any state, so the buttons float on the black
-       field and over content scrolling beneath them. Their shadow
-       is the stuck-only drop shadow on the buttons themselves, and
-       while stuck the container blurs the content behind it (see
-       .toolbar.is-stuck above) — blur only, never a filled tray. */
+    /* Behind the tabs sits the black transparency container (see
+       .toolbar above) — black at around 40%, never a tab color — so
+       the buttons sit on that plain transparent black field and over
+       content scrolling beneath them. Their shadow is the stuck-only
+       drop shadow on the buttons themselves, and while stuck the
+       container also blurs the content behind it. */
     body[data-view] .toolbar { touch-action: pan-y; }
     body[data-view] .intro h1 { color: var(--tabc-ink); }
     body[data-view] .lede { color: var(--tabc-muted); }
