@@ -122,12 +122,37 @@
     /* The intro band at the very top is where the active tab's
        solid color lives — a colored header card on the black page,
        matching its tab button. */
+    /* One intro square per tab — and EVERY tab gets one, all of
+       them the EXACT same size: the square's height is fixed
+       (160px, 184px at phone widths where the words wrap
+       tighter), so switching tabs never changes the square's
+       size, only its color, its name and its description. Each
+       square names its tab at the top, says what that tab is
+       underneath, and carries an × at its top right corner that
+       dismisses that tab's square on its own. */
     .intro {
-      padding: 22px 24px 20px;
+      position: relative;
+      height: 160px;
+      overflow: hidden;
+      padding: 22px 56px 20px 24px;
       border-radius: 5px;
       background: var(--tabc);
     }
+    @media (max-width: 640px) { .intro { height: 184px; padding: 18px 52px 18px 20px; } }
     .intro-copy { max-width: 700px; }
+    .intro-close {
+      position: absolute; top: 12px; right: 12px; z-index: 2;
+      width: 34px; height: 34px; padding: 0;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--tabc-line);
+      background: rgba(0, 0, 0, .18);
+      color: var(--tabc-ink);
+      font-size: 1.25rem; font-weight: 600; line-height: 1;
+      cursor: pointer;
+    }
+    .intro-close:hover, .intro-close:focus-visible { background: rgba(0, 0, 0, .34); }
+    .intro-close:focus-visible { outline: 3px solid var(--tabc-ink); outline-offset: 2px; }
     .eyebrow { margin: 0 0 10px; color: var(--rust); font-weight: 600; font-size: .83rem; letter-spacing: .04em; }
     h1 {
       font-family: "Newsreader", serif;
@@ -166,7 +191,12 @@
       align-items: center;
       gap: 16px;
       margin: 20px 0 22px;
-      padding: 16px 14px;
+      /* ONE padding on every side: the bottom padding (16px)
+         applied to the top, right and left as well, so the
+         first and last tab buttons sit exactly as close to
+         the bar's sides as every button sits to its top and
+         bottom — no extra space pooled at the sides. */
+      padding: 16px;
       border-radius: 0;
       background-color: rgba(0, 0, 0, .4);
     }
@@ -180,11 +210,12 @@
        content scrolling under the pinned bar softens behind the
        black transparency instead of showing through sharp. */
     .toolbar.is-stuck { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-    /* One shared tab bar for all four tabs — same bar, same size
-       on every tab. The Cookbook tab is an ordinary scrolling page
-       now: the week planner sits above the book, and the book
-       itself is page-sized like the browser's deck. Browse is its
-       own tab with the same page layout. */
+    /* One shared tab bar for all five tabs — same bar, same size
+       on every tab. The Cookbook tab is the book ALONE, page-sized
+       like the browser's deck, so it keeps its no-scroll look and
+       is never buried under anything: the week planner is its own
+       tab now, an ordinary scrolling page of its own. Browse is
+       its own tab with the same page layout. */
     body[data-view="cook"] .cookbook, body[data-view="browse"] .cookbook { height: min(82vh, 800px); height: min(82dvh, 800px); border-radius: 5px; }
     .browser-book { margin-top: 18px; }
     .cookbook-tab .cookbook { margin-top: 18px; }
@@ -207,12 +238,30 @@
     .slot-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--green); background: var(--green-soft); color: var(--ink); border-radius: 6px; padding: 12px 14px; margin: 0 0 14px; font-size: .86rem; line-height: 1.5; }
     .slot-picker-browse { margin-top: 10px; margin-right: 14px; border: 1px solid var(--green); background: var(--paper); color: var(--green); border-radius: 6px; padding: 8px 14px; font-weight: 600; font-size: .8rem; cursor: pointer; min-height: 40px; }
     .slot-picker-browse:hover, .slot-picker-browse:focus-visible { color: var(--rust); border-color: var(--rust); }
-    .tabs { display: flex; gap: 10px; flex: 1 1 auto; }
+    /* The tab row fills the bar edge to edge: space-between
+       puts the first button flush against the left padding
+       and the last flush against the right padding (16px on
+       every side, matching the top and bottom), and divides
+       ALL the leftover width equally between the buttons —
+       so the four gaps between the five tiles are always
+       visually the same. The gap values below are only the
+       minimum the gaps can reach; space-between adds the
+       rest evenly on top of them. On wide desktop widths
+       the row itself is capped at 460px and centered, so
+       the same even distribution holds without the gaps
+       stretching the full width of a desktop page; at phone
+       widths the bar is narrower than the cap, so the row
+       runs the bar's full width there. */
+    .tabs { display: flex; gap: 16px; flex: 1 1 auto; width: 100%; max-width: 460px; margin-inline: auto; justify-content: space-between; }
     /* Tabs are ICONS ONLY: no text labels, no count numbers —
-       the red corner dot is the only change signal. Buttons
-       share the row evenly. */
-    .tabs .tab { flex: 1 1 0; justify-content: center; min-width: 0; }
-    @media (max-width: 640px) { .tabs { gap: 6px; } .tabs .tab { padding: 10px 4px; } .tabs .tab svg { width: 15px; height: 15px; } }
+       the red corner dot is the only change signal. The buttons
+       are SQUARE — exactly as wide as they are tall, 52px each —
+       with rounded corners. Five of them fit the bar: at phone
+       widths the minimum gap narrows (16px down to 8px) so the
+       buttons themselves never have to shrink to make room
+       for the fifth. */
+    .tabs .tab { flex: 0 0 auto; width: 52px; height: 52px; padding: 0; justify-content: center; min-width: 0; }
+    @media (max-width: 640px) { .tabs { gap: 8px; } }
     /* Every tab is a colored button in its own right — salmon for
        List, teal for Pantry, a medium warm gray for Cookbook — with
        a simple line icon beside its label. The buttons are FULLY
@@ -222,23 +271,56 @@
        No opacity is ever applied to a tab. */
     .tab {
       display: inline-flex; align-items: center; gap: 8px;
-      border: 0;
+      /* Every tab ALWAYS carries a 3px border — transparent when
+         inactive, pulsing when active (see below). Reserving the
+         stroke on all five tabs means showing it on the active
+         one changes no tab's size, so the navbar never jumps
+         when the active tab changes. */
+      border: 3px solid transparent;
       background: var(--btnc);
       color: #fffdf7;
-      padding: 10px 16px;
-      border-radius: 5px;
+      padding: 0;
+      /* Square buttons WITH rounded corners — the rounding was
+         always part of the design. */
+      border-radius: 12px;
       cursor: pointer;
       font-weight: 600;
       font-size: .88rem;
       opacity: 1;
     }
-    .tab svg { width: 18px; height: 18px; flex: 0 0 auto; }
-    .tab--list { --btnc: #e2725b; }
-    .tab--pantry { --btnc: #2a7f76; }
-    .tab--cook { --btnc: #8a7a6d; }
-    .tab--browse { --btnc: #5f6f8a; }
-    /* Each tab keeps its own color — salmon for List, teal for
-       Pantry, medium warm gray for Cookbook — but the color is a
+    /* The currently active tab — for every tab, driven by the
+       aria-selected the buttons already carry. There is NO bar
+       under the icon: the mark is the border alone. The border
+       is a SOLID color — the tab's own color at 20%, the pale
+       tint that color becomes at 20% opacity over the cream
+       (--btnc-20, set per tab below) — and it PULSES between
+       the button's full background color and that lighter tint.
+       Only the border's color ever changes, never its width or
+       the button's size, so switching tabs cannot move, resize
+       or reflow the bar or anything around it. */
+    .tab[aria-selected="true"] {
+      border-color: var(--btnc-20);
+      animation: tab-pulse 1.1s ease-in-out infinite alternate;
+    }
+    @keyframes tab-pulse {
+      from { border-color: var(--btnc); }
+      to { border-color: var(--btnc-20); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tab[aria-selected="true"] { animation: none; }
+    }
+    /* The icons carry the buttons now that there are five: drawn
+       bigger (28px) inside the same 52px buttons — the buttons
+       themselves did not grow. */
+    .tab svg { width: 28px; height: 28px; flex: 0 0 auto; }
+    .tab--list { --btnc: #e2725b; --btnc-20: #f8e1d8; }
+    .tab--pantry { --btnc: #2a7f76; --btnc-20: #d3e4dd; }
+    .tab--cook { --btnc: #8a7a6d; --btnc-20: #e6e3db; }
+    .tab--browse { --btnc: #5f6f8a; --btnc-20: #dde1e1; }
+    .tab--planner { --btnc: #b8860b; --btnc-20: #f1e1bd; }
+    /* Each tab keeps its own color — slate for Browse, salmon for
+       List, teal for Pantry, gold for Planner, medium warm gray
+       for Cookbook — but the color is a
        thematic highlight, not the page: the background is always
        black. The color shows on the tab's own floating button and
        across the intro band at the top of the page, and the three
@@ -249,6 +331,7 @@
     body[data-view="plan"] { --tabc: #2a7f76; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="cook"] { --tabc: #8a7a6d; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="browse"] { --tabc: #5f6f8a; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
+    body[data-view="planner"] { --tabc: #b8860b; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     /* Behind the tabs sits the black transparency container (see
        .toolbar above) — black at around 40%, never a tab color — so
        the buttons sit on that plain transparent black field and over
@@ -418,7 +501,9 @@
     .cat-ribbon-set { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 12px; }
     .cat-ribbon-set--row { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: thin; padding: 2px 8px 8px 2px; }
     .cat-ribbon-set--row .cat-tile { flex: 0 0 96px; }
-    /* Sticky ribbons: a ribbon wrapped together with the items it
+    /* Sticky ribbons — the SECOND of only two sticky things in
+       the app (the tab bar is the first; nothing else sticks):
+       a ribbon wrapped together with the items it
        navigates (a .cat-stick block — the catalog panel under it,
        the contents groups, the pick grid) pins just under the
        sticky tab bar while those items scroll beneath it, and lets
@@ -453,29 +538,14 @@
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
-    /* The subcategory strip stacks the same way, one level down:
-       while its own section scrolls beneath it, it pins flush
-       under the ribbon above it — its offset is the tab bar's
-       height plus that ribbon's measured height, published on
-       the .cat-stick as --rbh (see syncRibbonHeights) — and plain
-       sticky releases it at both ends of its section: its
-       containing block is the catalog panel (List and Pantry) or
-       the pick block (the Use-up picker), so it can never travel
-       past them. The strip's look does not change: its band is
-       the same paper it already sits on inside those panels, and
-       the breathing room that used to be its margins becomes
-       padding, so the pinned band meets the ribbon above and the
-       items below with no see-through gap at its edges. */
-    .cat-stick .subcat-strip {
-      position: sticky;
-      top: calc(var(--tbh) + var(--rbh, 0px));
-      z-index: 29;
-      background: var(--paper);
-      margin-top: 0;
-      margin-bottom: 0;
-      padding-bottom: 14px;
-    }
-    .picker-panel .cat-stick .subcat-strip { margin: 0; padding-top: 12px; padding-bottom: 2px; }
+    /* The subcategory drilldowns are NOT sticky — only TWO
+       things in this app ever stick: the tab bar (.toolbar)
+       and the category ribbon above. There is not room for a
+       third pinned band, so the drilldown pills sit in normal
+       flow directly under the ribbon and scroll away with the
+       rest of their section. No sticky rule, no offset and no
+       measured-height variable exists for them. */
+    .cat-stick .subcat-strip { position: static; }
     .shop .shop-list .cat-stick > .cat-ribbon,
     .picker-panel .cat-stick > .cat-ribbon {
       background: var(--paper);
@@ -504,21 +574,22 @@
     body[data-view] .pantry .cat-tile-art { box-shadow: 6px 6px 0 rgba(255, 248, 234, .3); }
     .cat-tile-art svg { width: 100%; height: 100%; display: block; }
     .cat-tile:hover .cat-tile-art { border-color: var(--line); }
-    /* The selected tile is PRESSED IN, inverted from the normal
-       raised tile, and covers the EXACT same space: the border
-       stays 2px (transparent when unselected, colored when
-       selected), no size, padding or margin changes. The shadow
-       moves to the TOP as an inset, the face sits flat, the
-       offset drop shadow is gone — and the stroke is a DARKER
-       shade of that tile's OWN background color, supplied per
-       tile as --tile-dark (see CAT_TINT_DARK in the script). */
+    /* The selected tile is PRESSED IN, and it covers the EXACT
+       same space: the border stays 2px (transparent when
+       unselected, colored when selected), no size, padding or
+       margin changes. Per the user's drawing, the inset shadow
+       goes on the TOP and the LEFT SIDE ONLY — not on the right
+       side, not on the bottom. The outside offset shadow is
+       gone, and the stroke is a DARKER shade of that tile's
+       OWN background color, supplied per tile as --tile-dark
+       (see CAT_TINT_DARK in the script). */
     .cat-tile.is-active .cat-tile-art,
     .cat-tile.is-active:hover .cat-tile-art {
       border-color: var(--tile-dark, #6b5a3e);
-      box-shadow: inset 0 8px 0 rgba(0, 0, 0, .34), inset 0 16px 18px rgba(0, 0, 0, .22), inset 0 -3px 0 rgba(255, 255, 255, .28);
+      box-shadow: inset 0 6px 0 rgba(0, 0, 0, .36), inset 6px 0 0 rgba(0, 0, 0, .36);
     }
     body[data-view] .shop .cat-tile.is-active .cat-tile-art,
-    body[data-view] .pantry .cat-tile.is-active .cat-tile-art { box-shadow: inset 0 8px 0 rgba(0, 0, 0, .34), inset 0 16px 18px rgba(0, 0, 0, .22), inset 0 -3px 0 rgba(255, 255, 255, .28); border-color: var(--tile-dark, #6b5a3e); }
+    body[data-view] .pantry .cat-tile.is-active .cat-tile-art { box-shadow: inset 0 6px 0 rgba(0, 0, 0, .36), inset 6px 0 0 rgba(0, 0, 0, .36); border-color: var(--tile-dark, #6b5a3e); }
     /* Category names never wrap: every label is one line. */
     .cat-tile-label { font-size: .78rem; font-weight: 500; line-height: 1.25; text-align: center; white-space: nowrap; }
     .cat-tile.is-active .cat-tile-label { color: var(--ink); font-weight: 600; }
@@ -533,30 +604,47 @@
     body[data-view] .shop .shop-list .cat-ribbon > .filter-group-label { color: var(--rust); }
     .cat-tile:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
     @media (prefers-reduced-motion: reduce) { .cat-tile-art { transition: none; } }
-    /* Subcategory strip: directly beneath the ribbon once a category
-       is picked — one circular picture tile per subcategory with a
-       single word under it (a cow for Beef, a pig for Pork). Nothing
-       else: no counts, no descriptions, no extra controls. It wraps
-       instead of scrolling, so it never adds sideways scroll. */
-    .subcat-strip { display: flex; flex-wrap: wrap; gap: 10px 8px; margin: 0 0 14px; }
-    .picker-panel .subcat-strip { margin: 12px 0 2px; }
+    /* Subcategory drilldowns: PILLS in a RIBBON, directly beneath
+       the category ribbon once a category is picked. One pill per
+       subcategory — its small round picture beside its single word
+       (a cow for Beef, a pig for Pork), both on ONE line inside the
+       pill. Nothing else: no counts, no descriptions, no extra
+       controls. The pills run in a single row that pans sideways
+       like the List catalog row, so the whole drilldown takes one
+       short row of height instead of stacked rows of tall tiles.
+       It is not sticky (see the note above): it scrolls away with
+       its section. */
+    .subcat-strip {
+      display: flex; flex-wrap: nowrap; gap: 8px;
+      margin: 10px 0 12px; padding: 4px 4px 6px 2px;
+      overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .picker-panel .subcat-strip { margin: 10px 0 4px; }
     .subcat-tile {
-      flex: 0 0 auto; width: 62px; border: 0; background: transparent; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0;
-      color: var(--muted); font: inherit;
+      flex: 0 0 auto; width: auto; min-height: 36px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--paper); cursor: pointer;
+      display: flex; flex-direction: row; align-items: center; gap: 7px; padding: 4px 12px 4px 5px;
+      color: var(--muted); font: inherit; white-space: nowrap;
     }
     .subcat-tile * { pointer-events: none; }
     .subcat-art {
-      width: 54px; height: 54px; border-radius: 50%; display: block; overflow: hidden;
-      border: 2px solid transparent; background: var(--paper-2);
-      transition: border-color .15s ease;
+      width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; display: block; overflow: hidden;
+      border: 0; background: var(--paper-2);
     }
     .subcat-art svg { width: 100%; height: 100%; display: block; }
-    .subcat-tile:hover .subcat-art { border-color: var(--line); }
-    .subcat-tile.is-active .subcat-art { border-color: var(--green); }
-    .subcat-label { font-size: .74rem; font-weight: 500; line-height: 1.2; text-align: center; }
+    .subcat-tile:hover { border-color: var(--green); color: var(--ink); }
+    /* A picked pill is pressed in the same way as a picked
+       category tile: its shadow inverted on every side — top,
+       both sides and bottom — at pill scale, never a top band
+       alone. */
+    .subcat-tile.is-active {
+      border-color: var(--green); background: var(--green-soft); color: var(--ink);
+      box-shadow: inset 0 2px 0 rgba(0, 0, 0, .28), inset 2px 0 0 rgba(0, 0, 0, .28), inset -2px 0 0 rgba(0, 0, 0, .28), inset 0 -2px 0 rgba(0, 0, 0, .22);
+    }
+    .subcat-label { font-size: .78rem; font-weight: 500; line-height: 1.2; text-align: left; white-space: nowrap; }
     .subcat-tile.is-active .subcat-label { color: var(--ink); font-weight: 600; }
-    .subcat-tile:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+    .subcat-tile:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 999px; }
     @media (prefers-reduced-motion: reduce) { .subcat-art { transition: none; } }
     /* Catalog panel: what a category tap DOES. It renders directly
        beneath the ribbon — tap Produce and every produce item you can
@@ -1955,22 +2043,10 @@
       }
       window.addEventListener('resize', syncToolbarHeight);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncToolbarHeight);
-      /* Each sticky ribbon's height, published on its own
-         .cat-stick as --rbh: the subcategory strip pinned beneath
-         a ribbon offsets itself by the tab bar's height plus
-         exactly this much, so the stack stays flush whatever the
-         ribbon's layout (the List's panning row or the three-wide
-         grid). A ribbon in a hidden view measures zero and is
-         skipped — it is measured again when its view renders. */
-      function syncRibbonHeights() {
-        const ribbons = document.querySelectorAll('.cat-stick > .cat-ribbon');
-        for (let i = 0; i < ribbons.length; i++) {
-          const rb = ribbons[i];
-          if (rb.offsetHeight && rb.parentElement) rb.parentElement.style.setProperty('--rbh', rb.offsetHeight + 'px');
-        }
-      }
-      window.addEventListener('resize', syncRibbonHeights);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncRibbonHeights);
+      /* There is no ribbon-height sync: the drilldown pills are
+         not sticky, so nothing needs a measured offset under a
+         ribbon. Only the tab bar's height is measured (--tbh),
+         for the category ribbon that pins beneath it. */
       function renderRoot() {
         if (!rootNode || !rootComponent) return;
         hookCursor = 0;
@@ -2046,10 +2122,6 @@
           layoutBook();
         }
         if (sx || sy) instantScrollTo(sx, sy);
-        /* The rebuild replaced every ribbon with a fresh node:
-           re-measure them so the subcategory strips keep pinning
-           flush under the ribbon of the view just rendered. */
-        syncRibbonHeights();
       }
       const React = {
         createElement: h,
@@ -2255,6 +2327,17 @@
           h('path',{d:'M14.5 6.2H20'}),
           h('path',{d:'M2.5 13.5h19'}),
           h('rect',{x:'9.25',y:'16',width:'5.5',height:'4.5',rx:'1'})
+        );
+      }
+      /* Planner: a calendar page — the week at a glance, its days
+         as a plain grid (the plus lives on the card button that
+         adds a recipe to the plan, not on the tab). */
+      function PlannerIcon() {
+        return h('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'1.8','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'},
+          h('rect',{x:'3.5',y:'5',width:'17',height:'16',rx:'2.5'}),
+          h('path',{d:'M3.5 9.8h17'}),
+          h('path',{d:'M8 2.8v2.6M16 2.8v2.6'}),
+          h('path',{d:'M7 13h.01M12 13h.01M17 13h.01M7 17h.01M12 17h.01M17 17h.01'})
         );
       }
       /* Cookbook: an open book. */
@@ -4413,11 +4496,13 @@
         }
         return h('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true' }, m);
       }
-      /* The subcategory strip itself: an 'All' tile, then one tile
-         per subcategory — a picture with a single word beneath it,
-         and nothing else. Shown directly beneath the category ribbon
-         once a category is picked; picking a tile narrows everything
-         below to just that subcategory. */
+      /* The subcategory drilldown itself: an 'All' pill, then one
+         pill per subcategory — a small picture beside a single word,
+         both on one line inside the pill, all of them in a single
+         panning ribbon row, and nothing else. Shown directly beneath
+         the category ribbon once a category is picked; picking a pill
+         narrows everything below to just that subcategory. The ribbon
+         is not sticky: it scrolls away with its section. */
       function SubcatStrip({ cat, active, onSelect, ariaLabel }) {
         const subs = subcatsPresent(cat);
         if (subs.length < 2) return null;
@@ -6543,21 +6628,30 @@
         const [hiddenIds,setHiddenIds]=React.useState([]);
         const [noRecChecked,setNoRecChecked]=React.useState({});
         const [view,setView]=React.useState('cook');
-        /* Four tabs: 'shop' (List), 'plan' (Pantry), 'cook'
-           (Cookbook — the week planner above the book of saved
-           recipes) and 'browse' (Browse — the recipe browser on
-           its own tab). recipesMode is derived from the tab for
-           the book machinery: the browser's deck decides swipes,
-           the Cookbook's deck turns pages. */
+        /* The intro squares: one per tab, each dismissed on its
+           own by the × at its top right corner. Dismissal is
+           per tab and lasts for this session only — dismissing
+           the Cookbook's square leaves the other tabs' squares
+           exactly as they were. */
+        const [introDismissed,setIntroDismissed]=React.useState({});
+        /* Five tabs: 'shop' (List), 'plan' (Pantry), 'planner'
+           (Planner — the week planner, its OWN tab), 'cook'
+           (Cookbook — the book of saved recipes ALONE, so the tab
+           keeps its no-scroll look and the book is never something
+           you scroll down to reach) and 'browse' (Browse — the
+           recipe browser on its own tab). recipesMode is derived
+           from the tab for the book machinery: the browser's deck
+           decides swipes, the Cookbook's deck turns pages. */
         const recipesMode=view==='browse'?'browse':'book';
         /* Red change dots: item keys changed INDIRECTLY (by an
            action in another tab), per tab — shop: list line
-           uids, plan: pantry item names, cook: 'recipe:'+id and
-           'bucket:'+uid. tabFlags holds tab-level dots with no
-           viewable item (e.g. pantry removals). A tab's dot shows
-           while it has item dots or a flag; opening a tab clears
-           its flag, and viewing an item clears its dot. */
-        const [dots,setDots]=React.useState({shop:[],plan:[],cook:[],browse:[]});
+           uids, plan: pantry item names, cook: 'recipe:'+id,
+           planner: 'bucket:'+uid. tabFlags holds tab-level dots
+           with no viewable item (e.g. pantry removals). A tab's
+           dot shows while it has item dots or a flag; opening a
+           tab clears its flag, and viewing an item clears its
+           dot. */
+        const [dots,setDots]=React.useState({shop:[],plan:[],cook:[],browse:[],planner:[]});
         const [tabFlags,setTabFlags]=React.useState({});
         const [pendingSlot,setPendingSlot]=React.useState('');
         /* The split, as specified: the Cookbook holds the cook's
@@ -6583,13 +6677,14 @@
            same flat value as the tab's button. */
         if(document.body&&document.body.getAttribute('data-view')!==view)document.body.setAttribute('data-view',view);
         if(document.body&&document.body.getAttribute('data-recipes')!==recipesMode)document.body.setAttribute('data-recipes',recipesMode);
-        /* The three main tabs: 'shop' (List), 'plan' (Pantry),
-           'cook' (Recipes). Inside Recipes there are two features:
-           the Cookbook — the book of pages holding the recipes the
-           cook has saved — and the Recipe browser, which searches,
-           sorts and filters the recipes that are NOT in the
-           Cookbook. Saving a recipe (its bookmark) moves it
-           into the book; removing it sends it back to the browser. */
+        /* The five tabs: 'browse' (Browse), 'shop' (List), 'plan'
+           (Pantry), 'planner' (Planner) and 'cook' (Cookbook).
+           The Cookbook is the book of pages holding the recipes
+           the cook has saved, on its own tab with nothing above
+           it; the Recipe browser searches, sorts and filters the
+           recipes that are NOT in the Cookbook. Saving a recipe
+           (its bookmark) moves it into the book; removing it sends
+           it back to the browser. */
         /* Each search mode keeps its own search text and sort, so switching
            modes never clobbers what the user chose in the other one: a dish
            name typed in Browse stays in Browse, and an A–Z sort picked in
@@ -6796,7 +6891,7 @@
             const merged=cur[tab].slice();let changed=false;
             keys.forEach(function(k){if(merged.indexOf(k)===-1){merged.push(k);changed=true;}});
             if(!changed)return cur;
-            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse};out[tab]=merged;return out;
+            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse,planner:cur.planner};out[tab]=merged;return out;
           });
         }
         function markTabOnly(tab){
@@ -6806,7 +6901,7 @@
         function clearDot(tab,key){
           setDots(function(cur){
             if(cur[tab].indexOf(key)===-1)return cur;
-            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse};out[tab]=cur[tab].filter(function(k){return k!==key;});return out;
+            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse,planner:cur.planner};out[tab]=cur[tab].filter(function(k){return k!==key;});return out;
           });
         }
         const dotClearRef=React.useRef(null);
@@ -7350,7 +7445,7 @@
           bucketSeq.current+=1;
           const entry={uid:'plan-'+bucketSeq.current,recipeId:recipe.id,label:recipe.name};
           setBucket(function(cur){return cur.concat(entry);});
-          markDots('cook',['bucket:'+entry.uid]);
+          markDots('planner',['bucket:'+entry.uid]);
           /* Planning never edits the pantry: anything this recipe
              needs that the pantry doesn't hold goes to the Shop list
              instead, tagged as coming from the plan. */
@@ -7372,8 +7467,8 @@
         /* Filling an empty planner slot from Browse: the picked
            recipe fills the slot, is saved to the Cookbook (the
            wildcard rule), and its missing ingredients go to the
-           List — then the cook lands back on the Cookbook tab's
-           planner with that day open. */
+           List — then the cook lands back on the Planner tab with
+           that day open. */
         function fillSlotFromBrowse(recipe){
           const slotKey=pendingSlot;
           const dayKey=slotKey.split('-')[0];
@@ -7392,7 +7487,7 @@
           setPendingSlot('');
           setSlotPicker('');
           setOpenDay(dayKey);
-          goView('cook');
+          goView('planner');
         }
         function togglePlan(recipe){
           if(pendingSlot){fillSlotFromBrowse(recipe);return;}
@@ -7436,7 +7531,7 @@
             });
             return;
           }
-          markTabOnly('cook');
+          markTabOnly('planner');
           setBucket(function(cur){return cur.filter(function(e){return e.recipeId!==recipe.id;});});
           setWeekPlan(function(cur){
             const keys=Object.keys(cur).filter(function(k){return cur[k]&&cur[k].recipeId===recipe.id;});
@@ -8464,8 +8559,8 @@
             h('div',{className:'bucket-head'},h('h3',null,'Potential meals'),h('span',null,bucket.length+(bucket.length===1?' ITEM':' ITEMS')+' WAITING')),
             h('p',{className:'bucket-hint'},'These are the meals available to plan. Open a day in the week below, tap a meal slot, and choose from this list.'),
             bucket.length?h('div',{className:'bucket-items'},bucket.map(function(entry){
-              return h('div',{key:entry.uid,className:'bucket-item','data-dotkey':dots.cook.indexOf('bucket:'+entry.uid)>-1?('cook|bucket:'+entry.uid):undefined},
-                dots.cook.indexOf('bucket:'+entry.uid)>-1?h('span',{className:'change-dot','aria-hidden':'true'}):null,
+              return h('div',{key:entry.uid,className:'bucket-item','data-dotkey':dots.planner.indexOf('bucket:'+entry.uid)>-1?('planner|bucket:'+entry.uid):undefined},
+                dots.planner.indexOf('bucket:'+entry.uid)>-1?h('span',{className:'change-dot','aria-hidden':'true'}):null,
                 h('span',{className:'bucket-item-name'},entry.label),
                 h('span',{className:'bucket-item-meta'},entryMeta(entry)),
                 h('button',{type:'button',className:'bucket-item-x','aria-label':'Remove '+entry.label+' from potential meals',onClick:function(){removeBucketItem(entry.uid);}},'\u00d7')
@@ -8499,11 +8594,11 @@
             })())
           )
         );
-        /* Plan / Pantry tab: the week plan and the pantry share this
-           tab — the plan reads the pantry, and whatever the plan is
+        /* The Planner tab's bridge row, directly under the week
+           plan: the plan reads the pantry, and whatever the plan is
            missing belongs on the Shop list, never straight into the
-           pantry. The bridge row between them sends the whole plan's
-           missing ingredients over in one tap. */
+           pantry. The row sends the whole plan's missing ingredients
+           over in one tap. */
         const planMissingRow=h('div',{className:'plan-missing-row'},
             h('p',{className:'plan-missing-note'},'Planning never touches the pantry itself. When a planned recipe needs something the pantry doesn\u2019t hold, that ingredient belongs on the List — it only becomes pantry when it\u2019s actually bought.'),
             h('button',{type:'button',className:'bucket-add-btn plan-missing-btn',disabled:planMissingCount()?undefined:'',onClick:pushAllMissing},planMissingCount()?('Send '+planMissingCount()+' missing ingredient'+(planMissingCount()===1?'':'s')+' to the List'):'The plan is stocked from the pantry')
@@ -8530,7 +8625,7 @@
            opens with the tab bar pinned at its top, every time —
            so a sideways swipe never appears to jump between a
            landing at the very top and one past the summary. */
-        const TAB_ORDER=['browse','shop','plan','cook'];
+        const TAB_ORDER=['browse','shop','plan','planner','cook'];
         function goView(next,viaSwipe){
           setTabFlags(function(cur){if(!cur[next])return cur;const out=Object.assign({},cur);delete out[next];return out;});
           setView(next);
@@ -9037,16 +9132,35 @@
             )
           )
         );
-        const cookbookTabSection=h('div',{className:'cookbook-tab'},plannerSection,planMissingRow,bookSection);
+        /* The Planner and the Cookbook are SEPARATE tabs now: the
+           planner (week plan + its missing-ingredients bridge) is
+           a page of its own, and the Cookbook tab holds the book
+           alone — nothing above it to scroll past, so the book
+           keeps its fitted, no-scroll look the moment the tab
+           opens. */
+        const plannerTabSection=h('div',{className:'planner-tab'},plannerSection,planMissingRow);
+        const cookbookTabSection=h('div',{className:'cookbook-tab'},bookSection);
+        /* The intro square's words, per tab: the tab's own name
+           at the top, and underneath a description of what that
+           tab is — no shared message repeated across tabs. */
+        const TAB_INTRO={
+          browse:{name:'Browse',desc:'Recipes other cooks have shared online. Flip through them, save the ones you like to your Cookbook, or add your own.'},
+          shop:{name:'List',desc:'Your shopping list. Add items from the catalog or by hand, check off what you buy, and send it to the Pantry.'},
+          plan:{name:'Pantry',desc:'What you have on hand, sorted by where it\u2019s stored. Use flagged items first \u2014 tap one to find meals that use it.'},
+          planner:{name:'Planner',desc:'The week\u2019s meals. Add dishes to the bucket, then open a day below and fill its breakfast, lunch and dinner slots.'},
+          cook:{name:'Cookbook',desc:'Your saved recipes, one page at a time. Tap a card to flip it over for its ingredients and steps.'}
+        };
+        const introInfo=TAB_INTRO[view];
         return h(React.Fragment,null,
-          (view==='cook'||view==='browse')?null:h('header',{className:'intro',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('div',{className:'intro-copy'},h('h1',null,'Dinner, kept beautifully.'),h('p',{className:'lede'},'Every recipe from the food use-up inventory, plus the original cards. Start from ingredients that need using up, or browse by dish — tap a card to flip it, and save favorites to your Cookbook.'))),
+          introDismissed[view]?null:h('header',{className:'intro',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('button',{type:'button',className:'intro-close','aria-label':'Dismiss the '+introInfo.name+' introduction',onClick:function(){setIntroDismissed(function(cur){const out=Object.assign({},cur);out[view]=true;return out;});}},'\u00D7'),h('div',{className:'intro-copy'},h('h1',null,introInfo.name),h('p',{className:'lede'},introInfo.desc))),
           h('div',{className:'toolbar'+(headerStuck?' is-stuck':''),onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('div',{className:'tabs',role:'tablist','aria-label':'Main sections'},
             h('button',{className:'tab tab--browse',type:'button',role:'tab','aria-label':'Browse','aria-selected':view==='browse',onClick:function(){if(swipeJustHappened())return;goView('browse');}},h(OnlineIcon),tabHasDot('browse')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
             h('button',{className:'tab tab--list',type:'button',role:'tab','aria-label':'List','aria-selected':view==='shop',onClick:function(){if(swipeJustHappened())return;goView('shop');}},h(ListIcon),tabHasDot('shop')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
             h('button',{className:'tab tab--pantry',type:'button',role:'tab','aria-label':'Pantry','aria-selected':view==='plan',onClick:function(){if(swipeJustHappened())return;goView('plan');}},h(PantryIcon),tabHasDot('plan')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
+            h('button',{className:'tab tab--planner',type:'button',role:'tab','aria-label':'Planner','aria-selected':view==='planner',onClick:function(){if(swipeJustHappened())return;goView('planner');}},h(PlannerIcon),tabHasDot('planner')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
             h('button',{className:'tab tab--cook',type:'button',role:'tab','aria-label':'Cookbook','aria-selected':view==='cook',onClick:function(){if(swipeJustHappened())return;goView('cook');}},h(BookIcon),tabHasDot('cook')?h('span',{className:'tab-dot','aria-hidden':'true'}):null)
           )),
-          view==='shop'?shopSection:view==='plan'?pantrySection:view==='browse'?h('section',{className:'recipe-browser','aria-label':'Recipe browser — the community menu: browse recipes other cooks have shared online'},pendingSlot?h('div',{className:'slot-banner'},h('span',null,'Filling a planner slot: tap the calendar + button on a recipe and it fills the slot — and is saved to your Cookbook.'),h('button',{type:'button',className:'slot-picker-browse',onClick:function(){setPendingSlot('');goView('cook');}},'Cancel — back to the planner')):null,h('div',{className:'browser-head'},h('div',{className:'browser-head-text'},h('h2',{className:'browser-title'},'Recipe browser'),h('p',{className:'browser-sub'},'The community menu: recipes other cooks have shared online. Flip through them one page at a time, just like the Cookbook. Swipe a card right to add it to your Cookbook, left to pass — saved there, it works offline. Check "do not recommend for me again" on a card before a left swipe and it leaves the menu for good. A card\u2019s stars are everyone\u2019s rating; yours counts only after you\u2019ve cooked the recipe. A lit globe on a card means the recipe is shared online. Add your own recipe here too, and choose: share it online for other cooks to save, or keep it as a local page in your Cookbook only.')),h('button',{type:'button',className:'filter-toggle',onClick:function(){setAddOpen(true);}},'Add your recipe'),h('button',{type:'button',className:'filter-toggle',onClick:function(){deckResetPending=true;goView('cook');}},'Cookbook')),expiringPanel,expiringOn?null:h('div',{className:'controls'},
+          view==='shop'?shopSection:view==='plan'?pantrySection:view==='planner'?plannerTabSection:view==='browse'?h('section',{className:'recipe-browser','aria-label':'Recipe browser — the community menu: browse recipes other cooks have shared online'},pendingSlot?h('div',{className:'slot-banner'},h('span',null,'Filling a planner slot: tap the calendar + button on a recipe and it fills the slot — and is saved to your Cookbook.'),h('button',{type:'button',className:'slot-picker-browse',onClick:function(){setPendingSlot('');goView('planner');}},'Cancel — back to the planner')):null,h('div',{className:'browser-head'},h('div',{className:'browser-head-text'},h('h2',{className:'browser-title'},'Recipe browser'),h('p',{className:'browser-sub'},'The community menu: recipes other cooks have shared online. Flip through them one page at a time, just like the Cookbook. Swipe a card right to add it to your Cookbook, left to pass — saved there, it works offline. Check "do not recommend for me again" on a card before a left swipe and it leaves the menu for good. A card\u2019s stars are everyone\u2019s rating; yours counts only after you\u2019ve cooked the recipe. A lit globe on a card means the recipe is shared online. Add your own recipe here too, and choose: share it online for other cooks to save, or keep it as a local page in your Cookbook only.')),h('button',{type:'button',className:'filter-toggle',onClick:function(){setAddOpen(true);}},'Add your recipe'),h('button',{type:'button',className:'filter-toggle',onClick:function(){deckResetPending=true;goView('cook');}},'Cookbook')),expiringPanel,expiringOn?null:h('div',{className:'controls'},
             h('div',{className:'mode-row'},
               h('div',{className:'mode-toggle',role:'group','aria-label':'Search mode'},
                 h('button',{className:'mode-btn',type:'button','aria-pressed':mode==='useup',onClick:function(){switchMode('useup');}},'Use up ingredients'),
@@ -9149,13 +9263,12 @@
           h('div',{className:'result-row'},
             h('p',{className:'result-count','aria-live':'polite'},expiringOn?('Showing '+gridList.length+' of '+baseList.length+' recipes on the community menu · ranked by expiring ingredients used, most first'):('Showing '+gridList.length+' of '+baseList.length+' recipes on the community menu'+(mode==='useup'&&picked.length?' · ranked by what they use up':''))),
             !expiringOn&&filtersActive?h('button',{className:'clear-btn',type:'button',onClick:clearFilters},'Clear search & filters'):null
-          ),h('section',{className:'cookbook browser-book','aria-label':'Recipe browser — flip through the community menu, recipes other cooks have shared online'},h('div',{className:'book-head'},h('div',{className:'book-title'},h('strong',null,'RECIPE BROWSER'),h('span',{className:'book-page-count','aria-live':'polite'},gridList.length?('Page '+(Math.min(bookIndex,gridList.length-1)+1)+' of '+gridList.length):'No recipes')),h('div',{className:'book-find'},h('input',{className:'book-find-input',id:'browser-search',type:'search',placeholder:'Search recipes…','aria-label':'Search recipes',autocomplete:'off',value:query,onInput:function(e){setQuery(e.target.value);}}),h('button',{type:'button',className:'book-find-btn','aria-expanded':filtersOpen,'aria-controls':'recipe-filters','aria-label':activeFilterCount?('Filters, '+activeFilterCount+' active'):'Filters',onClick:function(){setFiltersOpen(!filtersOpen);}},'Filter',activeFilterCount?h('span',{className:'filter-count','aria-hidden':'true'},activeFilterCount+' on'):null))),h('div',{className:'book-pages',tabindex:'0','aria-label':'Recipe browser pages — flick or scroll to flip through the recipes',onKeyDown:onBookKeyDown},gridList.length?gridList.map(function(recipe,pageIdx){return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id},h(RecipeCard,{key:recipe.id,recipe:recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:expiringOn&&expStatById[recipe.id]?('USES '+expStatById[recipe.id].count+' OF '+expUnits.length+' EXPIRING · '+expStatById[recipe.id].pct+'%'):null,shareUi:shareUiFor(recipe,true),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),swipeMode:'menu',noRec:!!noRecChecked[recipe.id],onToggleNoRec:function(checked){toggleNoRec(recipe.id,checked);},onSwipeDecision:function(dir){swipeDecision(recipe,dir);},onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):!baseList.length?h('div',{className:'empty-state'},h('h2',null,'Nothing on the menu right now.'),h('p',null,'Every shared recipe is already in your Cookbook. Take one out with its bookmark and it will show up here to browse — or add your own recipe and share it online.')):shownList.length?h('div',{className:'empty-state'},h('h2',null,'All in the week plan.'),h('p',null,'Every recipe on the community menu is already planned for this week — planned recipes live in the Cookbook planner until you take them back out.'),h('button',{className:'primary-btn',type:'button',onClick:function(){goView('cook');setTimeout(function(){jumpToAnchor('week-planner');},60);}},'Open the week plan')):expiringOn?h('div',{className:'empty-state'},h('h2',null,'Nothing here uses them.'),h('p',null,'No recipe on the community menu uses any of the ingredients that need to go soon. Turn Expiring soon off to browse everything.')):h('div',{className:'empty-state'},h('h2',null,'Nothing matches that.'),h('p',null,mode==='useup'&&query?'No recipe\u2019s ingredient list matches \u201c'+query+'\u201d. In Use up mode the search reads ingredients only \u2014 try an ingredient name, or switch to Browse dishes to search by dish.':'No recipes on the community menu fit the current search and filters. Try a different ingredient, or clear them and browse the whole menu.'),h('button',{className:'primary-btn',type:'button',onClick:clearFilters},'Clear search & filters'))))):cookbookTabSection,indexOpen?indexModal:null,addOpen?addModal:null
+          ),h('section',{className:'cookbook browser-book','aria-label':'Recipe browser — flip through the community menu, recipes other cooks have shared online'},h('div',{className:'book-head'},h('div',{className:'book-title'},h('strong',null,'RECIPE BROWSER'),h('span',{className:'book-page-count','aria-live':'polite'},gridList.length?('Page '+(Math.min(bookIndex,gridList.length-1)+1)+' of '+gridList.length):'No recipes')),h('div',{className:'book-find'},h('input',{className:'book-find-input',id:'browser-search',type:'search',placeholder:'Search recipes…','aria-label':'Search recipes',autocomplete:'off',value:query,onInput:function(e){setQuery(e.target.value);}}),h('button',{type:'button',className:'book-find-btn','aria-expanded':filtersOpen,'aria-controls':'recipe-filters','aria-label':activeFilterCount?('Filters, '+activeFilterCount+' active'):'Filters',onClick:function(){setFiltersOpen(!filtersOpen);}},'Filter',activeFilterCount?h('span',{className:'filter-count','aria-hidden':'true'},activeFilterCount+' on'):null))),h('div',{className:'book-pages',tabindex:'0','aria-label':'Recipe browser pages — flick or scroll to flip through the recipes',onKeyDown:onBookKeyDown},gridList.length?gridList.map(function(recipe,pageIdx){return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id},h(RecipeCard,{key:recipe.id,recipe:recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:expiringOn&&expStatById[recipe.id]?('USES '+expStatById[recipe.id].count+' OF '+expUnits.length+' EXPIRING · '+expStatById[recipe.id].pct+'%'):null,shareUi:shareUiFor(recipe,true),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),swipeMode:'menu',noRec:!!noRecChecked[recipe.id],onToggleNoRec:function(checked){toggleNoRec(recipe.id,checked);},onSwipeDecision:function(dir){swipeDecision(recipe,dir);},onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):!baseList.length?h('div',{className:'empty-state'},h('h2',null,'Nothing on the menu right now.'),h('p',null,'Every shared recipe is already in your Cookbook. Take one out with its bookmark and it will show up here to browse — or add your own recipe and share it online.')):shownList.length?h('div',{className:'empty-state'},h('h2',null,'All in the week plan.'),h('p',null,'Every recipe on the community menu is already planned for this week — planned recipes live in the Planner until you take them back out.'),h('button',{className:'primary-btn',type:'button',onClick:function(){goView('planner');setTimeout(function(){jumpToAnchor('week-planner');},60);}},'Open the week plan')):expiringOn?h('div',{className:'empty-state'},h('h2',null,'Nothing here uses them.'),h('p',null,'No recipe on the community menu uses any of the ingredients that need to go soon. Turn Expiring soon off to browse everything.')):h('div',{className:'empty-state'},h('h2',null,'Nothing matches that.'),h('p',null,mode==='useup'&&query?'No recipe\u2019s ingredient list matches \u201c'+query+'\u201d. In Use up mode the search reads ingredients only \u2014 try an ingredient name, or switch to Browse dishes to search by dish.':'No recipes on the community menu fit the current search and filters. Try a different ingredient, or clear them and browse the whole menu.'),h('button',{className:'primary-btn',type:'button',onClick:clearFilters},'Clear search & filters'))))):cookbookTabSection,indexOpen?indexModal:null,addOpen?addModal:null
         );
       }
       ReactDOM.createRoot(document.getElementById('app')).render(App);
       syncHeaderStuck();
       syncToolbarHeight();
-      syncRibbonHeights();
     })();
   </script>
 
