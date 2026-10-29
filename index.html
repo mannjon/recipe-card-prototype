@@ -180,38 +180,39 @@
        content scrolling under the pinned bar softens behind the
        black transparency instead of showing through sharp. */
     .toolbar.is-stuck { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-    /* In the Cookbook the sticky toolbar is not shown at all:
-       it would float over the top of the book's content. The tabs
-       themselves live at the top of the pad instead — the same
-       three tab buttons, in a row built into the top of the book's
-       cover (see .book-head below), in the flow of the book, so a
-       tab never sits on top of content beneath it and every part
-       of the app stays reachable from the book. */
-    body[data-view="cook"] .toolbar { display: none; }
-    /* The Cookbook IS the Recipes view while it is open: the pad
-       takes the whole screen — the page wrapper gives it
-       everything (no width cap, no margins, no padding) and the
-       document does not scroll at all. NO EXCEPTIONS: nothing
-       else renders alongside the book, so there is nothing to
-       scroll to and nothing beneath the pad. */
-    body[data-view="cook"] { overflow: hidden; overscroll-behavior: none; }
-    body[data-view="cook"] .page { width: 100%; max-width: none; margin: 0; padding: 0; }
-    body[data-view="cook"] .cookbook { margin: 0; height: 100vh; height: 100dvh; }
-    /* The Recipe browser is the second feature inside Recipes,
-       reached by the switch in the Cookbook index (or from the
-       empty book) — never by scrolling down from the book. While
-       it is open the view is an ordinary page again: the sticky
-       tabs come back, the wrapper returns to its column, and the
-       page scrolls as pages do. */
-    body[data-view="cook"][data-recipes="browse"] { overflow: visible; overscroll-behavior: none; }
-    body[data-view="cook"][data-recipes="browse"] .toolbar { display: flex; }
-    body[data-view="cook"][data-recipes="browse"] .page { width: min(1180px, calc(100% - 36px)); margin: 0 auto; padding: 24px 0 64px; }
-    /* The browser's deck is the same pad machinery at page size:
-       tall enough to flip through cards in rapid succession,
-       sitting in the page under its filter controls. */
-    body[data-view="cook"][data-recipes="browse"] .cookbook { height: min(82vh, 800px); height: min(82dvh, 800px); border-radius: 5px; }
+    /* One shared tab bar for all four tabs — same bar, same size
+       on every tab. The Cookbook tab is an ordinary scrolling page
+       now: the week planner sits above the book, and the book
+       itself is page-sized like the browser's deck. Browse is its
+       own tab with the same page layout. */
+    body[data-view="cook"] .cookbook, body[data-view="browse"] .cookbook { height: min(82vh, 800px); height: min(82dvh, 800px); border-radius: 5px; }
     .browser-book { margin-top: 18px; }
-    .tabs { display: flex; gap: 10px; }
+    .cookbook-tab .cookbook { margin-top: 18px; }
+    #week-planner { scroll-margin-top: 96px; }
+    /* Red change dots: ONLY in the two places specified — a tab
+       button's upper right corner, and a changed item's own
+       corner. The tab dot rides up ON the corner (half outside
+       the button) so it never covers the button's icon. The item
+       dot likewise straddles its item's corner so it never covers
+       the item's name or picture. No dots anywhere else. */
+    .tab { position: relative; overflow: visible; }
+    .tab-dot { position: absolute; top: -6px; right: -6px; width: 12px; height: 12px; border-radius: 50%; background: #e02318; border: 2px solid #fffdf7; box-shadow: 0 1px 3px rgba(0,0,0,.4); z-index: 3; pointer-events: none; }
+    .change-dot { position: absolute; top: -6px; right: -6px; width: 11px; height: 11px; border-radius: 50%; background: #e02318; border: 2px solid #fffdf7; box-shadow: 0 1px 3px rgba(0,0,0,.35); z-index: 3; pointer-events: none; }
+    .shop-item, .pantry-item, .bucket-item { position: relative; }
+    /* Recipe pages clip their contents (overflow:hidden), so a
+       straddling dot would be cut off there; the page dot stays
+       just inside its own top-right corner instead. */
+    .recipe-page .change-dot { top: 10px; right: 10px; }
+    .cookbook-stamp { background: var(--gold); color: #241a05; border-radius: 6px; padding: 2px 8px; font-size: .66rem; font-weight: 700; letter-spacing: .04em; }
+    .slot-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--green); background: var(--green-soft); color: var(--ink); border-radius: 6px; padding: 12px 14px; margin: 0 0 14px; font-size: .86rem; line-height: 1.5; }
+    .slot-picker-browse { margin-top: 10px; margin-right: 14px; border: 1px solid var(--green); background: var(--paper); color: var(--green); border-radius: 6px; padding: 8px 14px; font-weight: 600; font-size: .8rem; cursor: pointer; min-height: 40px; }
+    .slot-picker-browse:hover, .slot-picker-browse:focus-visible { color: var(--rust); border-color: var(--rust); }
+    .tabs { display: flex; gap: 10px; flex: 1 1 auto; }
+    /* Tabs are ICONS ONLY: no text labels, no count numbers —
+       the red corner dot is the only change signal. Buttons
+       share the row evenly. */
+    .tabs .tab { flex: 1 1 0; justify-content: center; min-width: 0; }
+    @media (max-width: 640px) { .tabs { gap: 6px; } .tabs .tab { padding: 10px 4px; } .tabs .tab svg { width: 15px; height: 15px; } }
     /* Every tab is a colored button in its own right — salmon for
        List, teal for Pantry, a medium warm gray for Cookbook — with
        a simple line icon beside its label. The buttons are FULLY
@@ -235,6 +236,7 @@
     .tab--list { --btnc: #e2725b; }
     .tab--pantry { --btnc: #2a7f76; }
     .tab--cook { --btnc: #8a7a6d; }
+    .tab--browse { --btnc: #5f6f8a; }
     /* Each tab keeps its own color — salmon for List, teal for
        Pantry, medium warm gray for Cookbook — but the color is a
        thematic highlight, not the page: the background is always
@@ -246,6 +248,7 @@
     body[data-view="shop"] { --tabc: #e2725b; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="plan"] { --tabc: #2a7f76; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     body[data-view="cook"] { --tabc: #8a7a6d; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
+    body[data-view="browse"] { --tabc: #5f6f8a; --tabc-ink: #fff8ea; --tabc-muted: rgba(255,248,234,.93); --tabc-line: rgba(255,248,234,.5); }
     /* Behind the tabs sits the black transparency container (see
        .toolbar above) — black at around 40%, never a tab color — so
        the buttons sit on that plain transparent black field and over
@@ -425,11 +428,24 @@
        the gaps between tiles: translucent black with a blur out on
        the black page (the tab bar's own stuck treatment), plain
        paper inside the paper panels (the list panel, the picker). */
+    /* The breathing room above a sticky ribbon lives on the
+       .cat-stick wrapper, not on the ribbon itself: a margin on
+       the ribbon would ride on top of its sticky offset and
+       reopen the gap under the tab bar. */
+    .cat-stick { margin-top: 16px; }
+    .picker-panel .cat-stick { margin-top: 12px; }
     .cat-stick > .cat-ribbon {
       position: sticky;
-      top: calc(var(--tbh) + 6px);
+      /* Flush against the tab bar's bottom edge by POSITION only:
+         the ribbon pins at exactly the bar's measured height —
+         no extra offset, no margin, no gap band of page showing
+         through between the two sticky blocks. Its appearance is
+         untouched by the flush fit: the corners stay rounded on
+         all four sides, exactly as the ribbon has always looked. */
+      top: var(--tbh);
       z-index: 30;
       padding: 8px 10px 4px;
+      margin-top: 0;
       margin-left: -10px;
       margin-right: -10px;
       border-radius: 6px;
@@ -437,6 +453,29 @@
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
+    /* The subcategory strip stacks the same way, one level down:
+       while its own section scrolls beneath it, it pins flush
+       under the ribbon above it — its offset is the tab bar's
+       height plus that ribbon's measured height, published on
+       the .cat-stick as --rbh (see syncRibbonHeights) — and plain
+       sticky releases it at both ends of its section: its
+       containing block is the catalog panel (List and Pantry) or
+       the pick block (the Use-up picker), so it can never travel
+       past them. The strip's look does not change: its band is
+       the same paper it already sits on inside those panels, and
+       the breathing room that used to be its margins becomes
+       padding, so the pinned band meets the ribbon above and the
+       items below with no see-through gap at its edges. */
+    .cat-stick .subcat-strip {
+      position: sticky;
+      top: calc(var(--tbh) + var(--rbh, 0px));
+      z-index: 29;
+      background: var(--paper);
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-bottom: 14px;
+    }
+    .picker-panel .cat-stick .subcat-strip { margin: 0; padding-top: 12px; padding-bottom: 2px; }
     .shop .shop-list .cat-stick > .cat-ribbon,
     .picker-panel .cat-stick > .cat-ribbon {
       background: var(--paper);
@@ -465,8 +504,23 @@
     body[data-view] .pantry .cat-tile-art { box-shadow: 6px 6px 0 rgba(255, 248, 234, .3); }
     .cat-tile-art svg { width: 100%; height: 100%; display: block; }
     .cat-tile:hover .cat-tile-art { border-color: var(--line); }
-    .cat-tile.is-active .cat-tile-art { border-color: var(--green); }
-    .cat-tile-label { font-size: .78rem; font-weight: 500; line-height: 1.25; text-align: center; }
+    /* The selected tile is PRESSED IN, inverted from the normal
+       raised tile, and covers the EXACT same space: the border
+       stays 2px (transparent when unselected, colored when
+       selected), no size, padding or margin changes. The shadow
+       moves to the TOP as an inset, the face sits flat, the
+       offset drop shadow is gone — and the stroke is a DARKER
+       shade of that tile's OWN background color, supplied per
+       tile as --tile-dark (see CAT_TINT_DARK in the script). */
+    .cat-tile.is-active .cat-tile-art,
+    .cat-tile.is-active:hover .cat-tile-art {
+      border-color: var(--tile-dark, #6b5a3e);
+      box-shadow: inset 0 8px 0 rgba(0, 0, 0, .34), inset 0 16px 18px rgba(0, 0, 0, .22), inset 0 -3px 0 rgba(255, 255, 255, .28);
+    }
+    body[data-view] .shop .cat-tile.is-active .cat-tile-art,
+    body[data-view] .pantry .cat-tile.is-active .cat-tile-art { box-shadow: inset 0 8px 0 rgba(0, 0, 0, .34), inset 0 16px 18px rgba(0, 0, 0, .22), inset 0 -3px 0 rgba(255, 255, 255, .28); border-color: var(--tile-dark, #6b5a3e); }
+    /* Category names never wrap: every label is one line. */
+    .cat-tile-label { font-size: .78rem; font-weight: 500; line-height: 1.25; text-align: center; white-space: nowrap; }
     .cat-tile.is-active .cat-tile-label { color: var(--ink); font-weight: 600; }
     .cat-tile-badge { font-size: .68rem; font-weight: 600; color: var(--rust); margin-top: -6px; }
     /* The shopping list's own category grid sits INSIDE the paper
@@ -1463,13 +1517,13 @@
        MAXIMIZED: the pad takes the entire screen, edge to edge,
        with no cover frame, no border, no margin of black field
        around it. It is not a picture framed inside the page; the
-       pad IS the page. The top of the pad carries the book's
-       header: the app's tabs row, a white line beneath it, then
+       pad IS the page. Above the pad sits the app's one shared
+       tab bar; the top of the pad carries the book's header —
        the book's name and page count — in the flow of the book,
        never floating over the pages beneath. The pages area
        takes whatever height the header leaves inside the
        book's full-screen height,
-       so the card front is designed net of the tabs row and
+       so the card front is designed net of the header and
        still fills its screen exactly, with no scroll bars on the
        front. Below the tabs row, one page at a time: the pages
        are stacked, and turning one is a page TURN — a horizontal
@@ -1495,19 +1549,16 @@
     }
     /* The header built into the top of the pad, in the flow of
        the book — never an overlay floating on top of the pages.
-       Two rows: the app's tabs row first, then the title row.
-       The tabs are the app's own .tab buttons, so they read
-       exactly as they do everywhere else; the header yields its
-       height to the pages below (flex column), which is how the
-       card front accounts for the header and stays full-screen. */
+       The app's tabs are the one shared sticky toolbar above the
+       book (see .toolbar); this header carries the title row and
+       the find row. It yields its height to the pages below
+       (flex column), which is how the card front accounts for
+       the header and stays full-screen. */
     .book-head {
       display: flex; flex-direction: column; align-items: stretch;
       padding: 0;
       color: #fff8ea;
     }
-    /* The tabs row: the same padding on the bottom as on the top
-       and sides, and a white line across just beneath it. */
-    .book-tabs { flex: 0 0 auto; min-width: 0; padding: 12px 16px; border-bottom: 1px solid #fff; }
     /* The title row: one row — the book's name larger and to the
        LEFT, the page designation smaller and RIGHT-justified, at
        the sizes they already are. */
@@ -1636,14 +1687,12 @@
         repeating-linear-gradient(180deg, rgba(36,38,31,0) 0, rgba(36,38,31,0) 23px, rgba(36,38,31,.22) 23px, rgba(36,38,31,.22) 24px);
     }
     /* The sheet does not start at the page — it runs UP the
-       book's head to the bottom of the nav tabs: the title row
-       sits on the same ruled paper, same solid gray, same red
-       margin line at the same left offset, so the paper reads
-       as one sheet from just beneath the tabs' white line all
-       the way down the page. The title's ink turns to the
-       sheet's own dark ink so it reads on the paper. The tabs
-       row itself stays on the black field, above its white
-       line, exactly as it was. */
+       book's head to the bottom of the shared tab bar: the
+       title row sits on the same ruled paper, same solid gray,
+       same red margin line at the same left offset, so the
+       paper reads as one sheet from just beneath the tab bar
+       all the way down the page. The title's ink turns to the
+       sheet's own dark ink so it reads on the paper. */
     .cookbook .book-title {
       background-color: #bfbfbf;
       background-image:
@@ -1783,7 +1832,10 @@
       .intro { grid-template-columns: 1fr; gap: 20px; }
       h1 { font-size: clamp(1.9rem, 9vw, 2.4rem); }
       .count-stamp { display: none; }
-      .toolbar { align-items: flex-end; }
+      /* Tab bar vertical padding must be EVEN: buttons stay
+         centered (align-items:center from the base rule), so
+         the 16px above the buttons equals the 16px below. */
+      .toolbar { align-items: center; }
       .sort-select { flex: 1 1 auto; }
       .result-row { flex-wrap: wrap; }
       .tabs { flex: 1; flex-wrap: wrap; }
@@ -1903,6 +1955,22 @@
       }
       window.addEventListener('resize', syncToolbarHeight);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncToolbarHeight);
+      /* Each sticky ribbon's height, published on its own
+         .cat-stick as --rbh: the subcategory strip pinned beneath
+         a ribbon offsets itself by the tab bar's height plus
+         exactly this much, so the stack stays flush whatever the
+         ribbon's layout (the List's panning row or the three-wide
+         grid). A ribbon in a hidden view measures zero and is
+         skipped — it is measured again when its view renders. */
+      function syncRibbonHeights() {
+        const ribbons = document.querySelectorAll('.cat-stick > .cat-ribbon');
+        for (let i = 0; i < ribbons.length; i++) {
+          const rb = ribbons[i];
+          if (rb.offsetHeight && rb.parentElement) rb.parentElement.style.setProperty('--rbh', rb.offsetHeight + 'px');
+        }
+      }
+      window.addEventListener('resize', syncRibbonHeights);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncRibbonHeights);
       function renderRoot() {
         if (!rootNode || !rootComponent) return;
         hookCursor = 0;
@@ -1938,8 +2006,27 @@
           const curPg = oldBook.querySelector('.recipe-page.is-current');
           if (curPg) bookAnchorId = curPg.getAttribute('data-recipe-id');
         }
+        /* The category ribbons pan sideways, and selecting a
+           category rebuilds the page like any state change — a
+           fresh ribbon node starts scrolled back at its first
+           tile, so the ribbon appeared to jump home on every tap.
+           Remember each ribbon's sideways scroll (by its ribbon
+           id) and put it back on the rebuilt ribbon in the same
+           pass: selecting a category changes only the items
+           below, and the ribbon itself stays exactly where the
+           user left it. */
+        const ribbonScrolls = {};
+        const oldRibbons = rootNode.querySelectorAll('[data-ribbon-scroll]');
+        for (let ri = 0; ri < oldRibbons.length; ri++) {
+          ribbonScrolls[oldRibbons[ri].getAttribute('data-ribbon-scroll')] = oldRibbons[ri].scrollLeft;
+        }
         rootNode.replaceChildren();
         append(rootNode, rootComponent());
+        const newRibbons = rootNode.querySelectorAll('[data-ribbon-scroll]');
+        for (let ri = 0; ri < newRibbons.length; ri++) {
+          const rk = newRibbons[ri].getAttribute('data-ribbon-scroll');
+          if (ribbonScrolls[rk]) newRibbons[ri].scrollLeft = ribbonScrolls[rk];
+        }
         if (fid) {
           const el = document.getElementById(fid);
           if (el) {
@@ -1959,6 +2046,10 @@
           layoutBook();
         }
         if (sx || sy) instantScrollTo(sx, sy);
+        /* The rebuild replaced every ribbon with a fresh node:
+           re-measure them so the subcategory strips keep pinning
+           flush under the ribbon of the view just rendered. */
+        syncRibbonHeights();
       }
       const React = {
         createElement: h,
@@ -2766,7 +2857,7 @@
           swipeMode==='menu'?h('span',{className:'swipe-stamp swipe-stamp--pass','aria-hidden':'true'},'PASS'):null,
           h(RatingControl,{value:rating,collective:collective,locked:rateLocked,onRate:onRate,label:recipe.name}),
           h('div',{className:'top-actions'},h(ShareButton,{onShare:onShare,label:recipe.name}),h(SaveButton,{isSaved,onToggle:onToggleSave,label:recipe.name}),h(PlanButton,{inPlan:inPlan,onToggle:onTogglePlan,label:recipe.name}),onOpenIndex?h(IndexButton,{onOpen:onOpenIndex}):null,shareUi?h(OnlineButton,{online:shareUi.online,own:shareUi.own,onToggle:shareUi.onToggle,label:recipe.name}):null),
-          h('div',{className:'recipe-front-body'},h('div',{className:'front-tags'},h('span',{className:'recipe-label'},label),recipe.useFirst?h('span',{className:'use-first-badge'},'★ USE FIRST'):null,expiringBadge?h('span',{className:'expiring-badge'},expiringBadge):null),h('h2',{className:'recipe-name'},recipe.name),h('p',{className:'recipe-meta'},meta),swipeMode==='menu'?h('label',{className:'norec-row',onPointerDown:function(e){e.stopPropagation();},onClick:function(e){e.stopPropagation();}},h('input',{type:'checkbox',checked:noRec?true:undefined,'aria-label':'do not recommend for me again — '+recipe.name,onChange:function(e){onToggleNoRec(e.target.checked);}}),'do not recommend for me again'):null)
+          h('div',{className:'recipe-front-body'},h('div',{className:'front-tags'},h('span',{className:'recipe-label'},label),recipe.useFirst?h('span',{className:'use-first-badge'},'★ USE FIRST'):null,swipeMode==='menu'&&isSaved?h('span',{className:'cookbook-stamp'},'IN YOUR COOKBOOK'):null,expiringBadge?h('span',{className:'expiring-badge'},expiringBadge):null),h('h2',{className:'recipe-name'},recipe.name),h('p',{className:'recipe-meta'},meta),swipeMode==='menu'?h('label',{className:'norec-row',onPointerDown:function(e){e.stopPropagation();},onClick:function(e){e.stopPropagation();}},h('input',{type:'checkbox',checked:noRec?true:undefined,'aria-label':'do not recommend for me again — '+recipe.name,onChange:function(e){onToggleNoRec(e.target.checked);}}),'do not recommend for me again'):null)
         );
       }
       function CardBack({recipe,flipped,inPlan,onFlip,madeOpen,madeMatches,madeExcluded,onOpenMade,onCloseMade,onExcludeMade,onConfirmMade,onTogglePlan}) {
@@ -2966,7 +3057,7 @@
            spot: it is never seen over the new card. A settle on
            the same page leaves the alert to its own timer. */
         const curPageId=cur?cur.getAttribute('data-recipe-id'):null;
-        if(curPageId!==bookSettledId){const hadPage=bookSettledId;bookSettledId=curPageId;if(hadPage!==null)killToast();}
+        if(curPageId!==bookSettledId){const hadPage=bookSettledId;bookSettledId=curPageId;if(hadPage!==null)killToast();if(curPageId)window.dispatchEvent(new CustomEvent('booksettled',{detail:curPageId}));}
         if(cur){
           const card=cur.querySelector('.recipe-card');
           const id=cur.getAttribute('data-recipe-id');
@@ -3617,14 +3708,15 @@
          PICKABLE_INGREDIENTS. */
       const PICK_GROUPS = [
         { key: 'produce', label: 'PRODUCE', keys: ['mushrooms', 'onion'] },
-        { key: 'meat-seafood', label: 'MEAT & SEAFOOD', keys: ['sirloin-tips', 'bacon', 'ham', 'kielbasa', 'chicken-tenders', 'shrimp'] },
+        { key: 'meat', label: 'MEAT', keys: ['sirloin-tips', 'bacon', 'ham', 'kielbasa', 'chicken-tenders'] },
+        { key: 'seafood', label: 'SEAFOOD', keys: ['shrimp'] },
         { key: 'cheese', label: 'CHEESE', keys: ['farm-shreds'] }
       ];
       function pickByKey(key) { return PICKABLE_INGREDIENTS.filter(function (p) { return p.key === key; })[0]; }
       /* The picker's ribbon entries: 'All' plus one tile per pick group.
          art names the Pantry category whose photo/illustration the tile
          wears (the picker's Cheese group borrows Dairy & Eggs). */
-      const PICK_RIBBON_ART = { 'produce': 'Produce', 'meat-seafood': 'Meat & Seafood', 'cheese': 'Dairy & Eggs' };
+      const PICK_RIBBON_ART = { 'produce': 'Produce', 'meat': 'Meat', 'seafood': 'Seafood', 'cheese': 'Dairy & Eggs' };
       const PICK_RIBBON_CATS = [{ value: 'all', label: 'All', art: 'All', aria: 'Show ingredients from all categories' }].concat(PICK_GROUPS.map(function (g) {
         const lbl = g.label.charAt(0) + g.label.slice(1).toLowerCase();
         return { value: g.key, label: lbl, art: PICK_RIBBON_ART[g.key] || lbl, aria: 'Show ' + lbl + ' ingredients' };
@@ -3673,43 +3765,43 @@
         expiry: { cls: 'badge-star', text: 'EXPIRES NOV 7' }
       };
       const PANTRY_ITEMS = [
-        {"n": "Filet mignon / beef tenderloin filet", "c": "Meat & Seafood", "t": "7", "s": {"deep": "5", "kitchen": "2"}, "term": "filet"},
-        {"n": "Flat iron steaks", "c": "Meat & Seafood", "t": "8", "s": {"deep": "8"}, "term": "flat iron"},
-        {"n": "Ribeye steaks", "c": "Meat & Seafood", "t": "6", "s": {"deep": "6"}, "term": "ribeye"},
-        {"n": "Beef brisket", "c": "Meat & Seafood", "t": "3", "s": {"deep": "3"}, "term": "brisket"},
-        {"n": "Beef chuck roast", "c": "Meat & Seafood", "t": "2", "s": {"deep": "2"}, "term": "chuck roast"},
-        {"n": "Beef flank steak", "c": "Meat & Seafood", "t": "2", "s": {"deep": "2"}, "term": "flank steak"},
-        {"n": "Boneless strip steaks", "c": "Meat & Seafood", "t": "2", "s": {"deep": "2"}, "term": "strip steak"},
-        {"n": "Ground beef, 80/20", "c": "Meat & Seafood", "t": "6", "s": {"deep": "6"}, "term": "ground beef"},
-        {"n": "Beef tenderloin tips", "c": "Meat & Seafood", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "tenderloin tips"},
-        {"n": "Beef sirloin tips", "c": "Meat & Seafood", "t": "1", "s": {"deep": "1"}, "pick": "sirloin-tips"},
-        {"n": "Beef premium steak tips", "c": "Meat & Seafood", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "premium steak tips"},
-        {"n": "Beef sirloin tips — thawing in fridge", "c": "Meat & Seafood", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "sirloin-tips", "f": ["thawing"]},
-        {"n": "Whole chicken", "c": "Meat & Seafood", "t": "3", "s": {"deep": "2", "kitchen": "1"}, "term": "whole chicken"},
-        {"n": "Chicken tenderloins", "c": "Meat & Seafood", "t": "9", "s": {"deep": "6", "kitchen": "3"}, "pick": "chicken-tenders"},
-        {"n": "Chicken breasts, boneless skinless (with rib meat)", "c": "Meat & Seafood", "t": "3", "s": {"deep": "3"}, "term": "chicken breast"},
-        {"n": "Chicken meatballs with basil & parmesan", "c": "Meat & Seafood", "t": "2", "s": {"deep": "2"}, "term": "chicken meatballs"},
-        {"n": "Chicken nuggets", "c": "Meat & Seafood", "t": "lots in 2 freezers", "s": {"deep": "1 lot", "kitchen": "present"}, "term": "chicken nugget"},
-        {"n": "Chicken bones for soup", "c": "Meat & Seafood", "t": "1 lot", "s": {"kitchen": "1 lot"}, "term": "chicken bones", "note": "For chicken soup — pair with ditalini + Swanson stock."},
-        {"n": "Chicken tenders — thawing in fridge", "c": "Meat & Seafood", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "chicken-tenders", "f": ["thawing"]},
-        {"n": "Canned chicken", "c": "Meat & Seafood", "t": "present", "s": {"pantry": "present"}, "term": "canned chicken"},
-        {"n": "Bacon", "c": "Meat & Seafood", "t": "3 counted packs + fridge packs", "s": {"deep": "2", "kitchen": "1", "fridge": "packs — unopened, count not specified"}, "pick": "bacon", "f": ["star", "week"], "note": "Starred pack in the kitchen freezer; the fridge packs are unopened and need eating."},
-        {"n": "Pork tenderloins", "c": "Meat & Seafood", "t": "3", "s": {"kitchen": "3"}, "term": "pork tenderloin"},
-        {"n": "Pork sirloin roast", "c": "Meat & Seafood", "t": "1", "s": {"deep": "1"}, "term": "pork sirloin roast"},
-        {"n": "Pork loin", "c": "Meat & Seafood", "t": "1", "s": {"deep": "1"}, "term": "pork loin"},
-        {"n": "Baby back ribs", "c": "Meat & Seafood", "t": "1", "s": {"deep": "1"}, "term": "baby back ribs"},
-        {"n": "Pork + ground beef meatloaf mix", "c": "Meat & Seafood", "t": "1 lot", "s": {"kitchen": "1 lot"}, "term": "meatloaf mix", "note": "Earmarked for meatloaf — don't split it up for other recipes."},
-        {"n": "Kielbasa", "c": "Meat & Seafood", "t": "2", "s": {"fridge": "2"}, "pick": "kielbasa", "f": ["week"]},
-        {"n": "Ham — thawing in fridge", "c": "Meat & Seafood", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "ham", "f": ["thawing"]},
-        {"n": "Spam", "c": "Meat & Seafood", "t": "present", "s": {"pantry": "present"}, "term": "spam"},
-        {"n": "Smoked salmon", "c": "Meat & Seafood", "t": "present", "s": {"kitchen": "present"}, "term": "smoked salmon", "f": ["star"], "note": "Only Elizabeth & Piper eat it — earmarked for her mom's salmon cheese ball."},
-        {"n": "Barramundi (?)", "c": "Meat & Seafood", "t": "present", "s": {"kitchen": "present"}, "term": "barramundi", "f": ["star"], "note": "Starred to use this year. The name was a best guess from the read-off."},
-        {"n": "Lobster tails", "c": "Meat & Seafood", "t": "2", "s": {"deep": "2"}, "term": "lobster"},
-        {"n": "Albacore tuna", "c": "Meat & Seafood", "t": "9", "s": {"pantry": "9"}, "term": "tuna"},
-        {"n": "Shrimp — thawing in fridge", "c": "Meat & Seafood", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "shrimp", "f": ["thawing"]},
-        {"n": "Italian-style meatballs", "c": "Meat & Seafood", "t": "present", "s": {"kitchen": "present"}, "term": "meatballs"},
-        {"n": "Mushroom burger patties", "c": "Meat & Seafood", "t": "3", "s": {"kitchen": "3"}, "term": "mushroom burger patties"},
-        {"n": "Egg bites", "c": "Meat & Seafood", "t": "1", "s": {"kitchen": "1"}, "term": "egg bites"},
+        {"n": "Filet mignon / beef tenderloin filet", "c": "Meat", "t": "7", "s": {"deep": "5", "kitchen": "2"}, "term": "filet"},
+        {"n": "Flat iron steaks", "c": "Meat", "t": "8", "s": {"deep": "8"}, "term": "flat iron"},
+        {"n": "Ribeye steaks", "c": "Meat", "t": "6", "s": {"deep": "6"}, "term": "ribeye"},
+        {"n": "Beef brisket", "c": "Meat", "t": "3", "s": {"deep": "3"}, "term": "brisket"},
+        {"n": "Beef chuck roast", "c": "Meat", "t": "2", "s": {"deep": "2"}, "term": "chuck roast"},
+        {"n": "Beef flank steak", "c": "Meat", "t": "2", "s": {"deep": "2"}, "term": "flank steak"},
+        {"n": "Boneless strip steaks", "c": "Meat", "t": "2", "s": {"deep": "2"}, "term": "strip steak"},
+        {"n": "Ground beef, 80/20", "c": "Meat", "t": "6", "s": {"deep": "6"}, "term": "ground beef"},
+        {"n": "Beef tenderloin tips", "c": "Meat", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "tenderloin tips"},
+        {"n": "Beef sirloin tips", "c": "Meat", "t": "1", "s": {"deep": "1"}, "pick": "sirloin-tips"},
+        {"n": "Beef premium steak tips", "c": "Meat", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "premium steak tips"},
+        {"n": "Beef sirloin tips — thawing in fridge", "c": "Meat", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "sirloin-tips", "f": ["thawing"]},
+        {"n": "Whole chicken", "c": "Meat", "t": "3", "s": {"deep": "2", "kitchen": "1"}, "term": "whole chicken"},
+        {"n": "Chicken tenderloins", "c": "Meat", "t": "9", "s": {"deep": "6", "kitchen": "3"}, "pick": "chicken-tenders"},
+        {"n": "Chicken breasts, boneless skinless (with rib meat)", "c": "Meat", "t": "3", "s": {"deep": "3"}, "term": "chicken breast"},
+        {"n": "Chicken meatballs with basil & parmesan", "c": "Meat", "t": "2", "s": {"deep": "2"}, "term": "chicken meatballs"},
+        {"n": "Chicken nuggets", "c": "Meat", "t": "lots in 2 freezers", "s": {"deep": "1 lot", "kitchen": "present"}, "term": "chicken nugget"},
+        {"n": "Chicken bones for soup", "c": "Meat", "t": "1 lot", "s": {"kitchen": "1 lot"}, "term": "chicken bones", "note": "For chicken soup — pair with ditalini + Swanson stock."},
+        {"n": "Chicken tenders — thawing in fridge", "c": "Meat", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "chicken-tenders", "f": ["thawing"]},
+        {"n": "Canned chicken", "c": "Meat", "t": "present", "s": {"pantry": "present"}, "term": "canned chicken"},
+        {"n": "Bacon", "c": "Meat", "t": "3 counted packs + fridge packs", "s": {"deep": "2", "kitchen": "1", "fridge": "packs — unopened, count not specified"}, "pick": "bacon", "f": ["star", "week"], "note": "Starred pack in the kitchen freezer; the fridge packs are unopened and need eating."},
+        {"n": "Pork tenderloins", "c": "Meat", "t": "3", "s": {"kitchen": "3"}, "term": "pork tenderloin"},
+        {"n": "Pork sirloin roast", "c": "Meat", "t": "1", "s": {"deep": "1"}, "term": "pork sirloin roast"},
+        {"n": "Pork loin", "c": "Meat", "t": "1", "s": {"deep": "1"}, "term": "pork loin"},
+        {"n": "Baby back ribs", "c": "Meat", "t": "1", "s": {"deep": "1"}, "term": "baby back ribs"},
+        {"n": "Pork + ground beef meatloaf mix", "c": "Meat", "t": "1 lot", "s": {"kitchen": "1 lot"}, "term": "meatloaf mix", "note": "Earmarked for meatloaf — don't split it up for other recipes."},
+        {"n": "Kielbasa", "c": "Meat", "t": "2", "s": {"fridge": "2"}, "pick": "kielbasa", "f": ["week"]},
+        {"n": "Ham — thawing in fridge", "c": "Meat", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "ham", "f": ["thawing"]},
+        {"n": "Spam", "c": "Meat", "t": "present", "s": {"pantry": "present"}, "term": "spam"},
+        {"n": "Smoked salmon", "c": "Seafood", "t": "present", "s": {"kitchen": "present"}, "term": "smoked salmon", "f": ["star"], "note": "Only Elizabeth & Piper eat it — earmarked for her mom's salmon cheese ball."},
+        {"n": "Barramundi (?)", "c": "Seafood", "t": "present", "s": {"kitchen": "present"}, "term": "barramundi", "f": ["star"], "note": "Starred to use this year. The name was a best guess from the read-off."},
+        {"n": "Lobster tails", "c": "Seafood", "t": "2", "s": {"deep": "2"}, "term": "lobster"},
+        {"n": "Albacore tuna", "c": "Seafood", "t": "9", "s": {"pantry": "9"}, "term": "tuna"},
+        {"n": "Shrimp — thawing in fridge", "c": "Seafood", "t": "thawing lot", "s": {"fridge": "thawing lot"}, "pick": "shrimp", "f": ["thawing"]},
+        {"n": "Italian-style meatballs", "c": "Meat", "t": "present", "s": {"kitchen": "present"}, "term": "meatballs"},
+        {"n": "Mushroom burger patties", "c": "Meat", "t": "3", "s": {"kitchen": "3"}, "term": "mushroom burger patties"},
+        {"n": "Egg bites", "c": "Breakfast", "t": "1", "s": {"kitchen": "1"}, "term": "egg bites"},
         {"n": "Corn (frozen)", "c": "Produce", "t": "in 2 freezers", "s": {"kitchen": "present", "garage": "present"}, "term": "corn"},
         {"n": "Broccoli (frozen)", "c": "Produce", "t": "in 2 freezers", "s": {"kitchen": "present", "garage": "present"}, "term": "broccoli"},
         {"n": "Asian medley vegetables", "c": "Produce", "t": "present", "s": {"kitchen": "present"}, "term": "asian medley"},
@@ -3720,14 +3812,14 @@
         {"n": "Rice and vegetables (frozen)", "c": "Produce", "t": "present", "s": {"garage": "present"}, "term": "rice and vegetables"},
         {"n": "Frozen rice", "c": "Produce", "t": "present", "s": {"garage": "present"}, "term": "frozen rice"},
         {"n": "Peas (frozen)", "c": "Produce", "t": "present", "s": {"garage": "present"}, "term": "peas"},
-        {"n": "Yakisoba packets", "c": "Prepared & Frozen", "t": "6 + more in garage", "s": {"kitchen": "6", "garage": "more — count not specified"}, "term": "yakisoba"},
-        {"n": "Spanakopita (?)", "c": "Prepared & Frozen", "t": "2", "s": {"kitchen": "2"}, "term": "spanakopita"},
-        {"n": "Pot stickers", "c": "Prepared & Frozen", "t": "some left", "s": {"garage": "some left"}, "term": "pot stickers"},
-        {"n": "Bulgogi pot stickers (?)", "c": "Prepared & Frozen", "t": "present", "s": {"garage": "present"}, "term": "pot stickers"},
-        {"n": "Breakfast English muffin sandwiches", "c": "Prepared & Frozen", "t": "present", "s": {"garage": "present"}},
-        {"n": "Peach turnovers (?)", "c": "Prepared & Frozen", "t": "present", "s": {"garage": "present"}},
-        {"n": "Frozen tacos", "c": "Prepared & Frozen", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "frozen tacos"},
-        {"n": "Breakfast bakes / frittata breakfast items", "c": "Prepared & Frozen", "t": "present", "s": {"deep": "present"}},
+        {"n": "Yakisoba packets", "c": "Frozen", "t": "6 + more in garage", "s": {"kitchen": "6", "garage": "more — count not specified"}, "term": "yakisoba"},
+        {"n": "Spanakopita (?)", "c": "Frozen", "t": "2", "s": {"kitchen": "2"}, "term": "spanakopita"},
+        {"n": "Pot stickers", "c": "Frozen", "t": "some left", "s": {"garage": "some left"}, "term": "pot stickers"},
+        {"n": "Bulgogi pot stickers (?)", "c": "Frozen", "t": "present", "s": {"garage": "present"}, "term": "pot stickers"},
+        {"n": "Breakfast English muffin sandwiches", "c": "Frozen", "t": "present", "s": {"garage": "present"}},
+        {"n": "Peach turnovers (?)", "c": "Frozen", "t": "present", "s": {"garage": "present"}},
+        {"n": "Frozen tacos", "c": "Frozen", "t": "1 lot", "s": {"deep": "1 lot"}, "term": "frozen tacos"},
+        {"n": "Breakfast bakes / frittata breakfast items", "c": "Frozen", "t": "present", "s": {"deep": "present"}},
         {"n": "Artisan sourdough bread (bake-anytime)", "c": "Pantry Staples", "t": "3", "s": {"pantry": "3"}, "term": "sourdough"},
         {"n": "Spaghetti", "c": "Pantry Staples", "t": "present", "s": {"pantry": "present"}, "term": "spaghetti"},
         {"n": "Angel hair", "c": "Pantry Staples", "t": "present", "s": {"pantry": "present"}, "term": "angel hair"},
@@ -3805,19 +3897,19 @@
         {"n": "Fresh garlic", "c": "Produce", "t": "2", "s": {"fridge": "2"}, "term": "garlic"},
         {"n": "Garlic (in kitchen freezer)", "c": "Produce", "t": "present", "s": {"kitchen": "present"}, "term": "garlic"},
         {"n": "Fresh limes, lemons & lemon juice", "c": "Produce", "t": "present", "s": {"fridge": "present"}, "term": "lemon"},
-        {"n": "Brown sugar", "c": "Baking & Breakfast", "t": "present", "s": {"pantry": "present"}, "term": "brown sugar"},
-        {"n": "Flour & standard pantry staples", "c": "Baking & Breakfast", "t": "present", "s": {"pantry": "present"}},
-        {"n": "Muffin mix", "c": "Baking & Breakfast", "t": "1", "s": {"pantry": "1"}},
-        {"n": "Swiss Miss hot cocoa", "c": "Baking & Breakfast", "t": "present", "s": {"pantry": "present"}},
-        {"n": "Maple oatmeal (?)", "c": "Baking & Breakfast", "t": "present", "s": {"pantry": "present"}},
-        {"n": "Old Bay & just about any seasoning you need", "c": "Baking & Breakfast", "t": "present", "s": {"pantry": "present"}, "term": "old bay"},
-        {"n": "Crackers & snacks", "c": "Snacks & Sweets", "t": "lots", "s": {"pantry": "lots"}, "term": "cracker"},
-        {"n": "Drinks (pantry)", "c": "Snacks & Sweets", "t": "assorted", "s": {"pantry": "assorted"}},
-        {"n": "Apple strudels", "c": "Snacks & Sweets", "t": "present", "s": {"kitchen": "present"}},
-        {"n": "Popsicles", "c": "Snacks & Sweets", "t": "4", "s": {"garage": "4"}},
-        {"n": "Apple cinnamon muffins", "c": "Baking & Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
-        {"n": "Pumpkin cranberry muffins", "c": "Baking & Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
-        {"n": "Double chocolate muffins", "c": "Baking & Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
+        {"n": "Brown sugar", "c": "Baking", "t": "present", "s": {"pantry": "present"}, "term": "brown sugar"},
+        {"n": "Flour & standard pantry staples", "c": "Baking", "t": "present", "s": {"pantry": "present"}},
+        {"n": "Muffin mix", "c": "Baking", "t": "1", "s": {"pantry": "1"}},
+        {"n": "Swiss Miss hot cocoa", "c": "Drinks", "t": "present", "s": {"pantry": "present"}},
+        {"n": "Maple oatmeal (?)", "c": "Breakfast", "t": "present", "s": {"pantry": "present"}},
+        {"n": "Old Bay & just about any seasoning you need", "c": "Pantry Staples", "t": "present", "s": {"pantry": "present"}, "term": "old bay"},
+        {"n": "Crackers & snacks", "c": "Snacks", "t": "lots", "s": {"pantry": "lots"}, "term": "cracker"},
+        {"n": "Drinks (pantry)", "c": "Drinks", "t": "assorted", "s": {"pantry": "assorted"}},
+        {"n": "Apple strudels", "c": "Sweets", "t": "present", "s": {"kitchen": "present"}},
+        {"n": "Popsicles", "c": "Frozen", "t": "4", "s": {"garage": "4"}},
+        {"n": "Apple cinnamon muffins", "c": "Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
+        {"n": "Pumpkin cranberry muffins", "c": "Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
+        {"n": "Double chocolate muffins", "c": "Breakfast", "t": "present", "s": {"garage": "present"}, "note": "Piper's quick breakfasts — not general dinner use-up stock."},
         {"n": "Jonathan's beer", "c": "Drinks", "t": "present", "s": {"garage": "in the outdoor fridge"}, "note": "In the outdoor fridge, not the freezer."}
       ];
       /* Inventory builder: how a quantity is measured decides which units
@@ -3867,11 +3959,12 @@
         if (has('juice') || has('lemonade')) return ['count', 'bottle'];
         if (has('coffee')) return ['count', 'bag'];
         if (has('sparkling water')) return ['count', 'pack'];
-        if (entry.c === 'Meat & Seafood') {
+        if (entry.c === 'Meat' || entry.c === 'Seafood') {
           if (has('can') || has('spam')) return ['count', 'can'];
           if (has('bacon') || has('nugget') || has('meatball') || has('meatloaf')) return ['count', 'pack'];
           return ['weight', 'lb'];
         }
+        if (entry.c === 'Household') return ['count', 'pack'];
         if ((has('cheese') || has('butter') || has('shreds')) && !has('beans')) return ['weight', 'oz'];
         if (has('flour') || has('sugar') || has('rice')) return ['weight', 'lb'];
         if (has('lettuce')) return ['count', 'head'];
@@ -3883,11 +3976,13 @@
         if (has('stock') || has('broth') || has('spaghetti') || has('noodle') || has('linguine') || has('farfalle') || has('rotini') || has('mac and cheese') || has('pasta')) return ['count', 'box'];
         return suggestMeasureFor(entry.n);
       }
-      const PANTRY_CATEGORIES = (function () {
-        const seen = [];
-        PANTRY_ITEMS.forEach(function (it) { if (seen.indexOf(it.c) === -1) seen.push(it.c); });
-        return seen;
-      })();
+      /* The category set, in its fixed display order: Meat and
+         Seafood split apart, Baking and Breakfast split apart,
+         Snacks and Sweets split apart, Frozen standing alone
+         (no 'Prepared'), and Household for the non-food staples.
+         Every label is short enough to sit on ONE line under its
+         tile. */
+      const PANTRY_CATEGORIES = ['Meat', 'Seafood', 'Produce', 'Frozen', 'Pantry Staples', 'Dairy & Eggs', 'Baking', 'Breakfast', 'Snacks', 'Sweets', 'Drinks', 'Household'];
       /* Category tiles, Instacart-style: icon tiles for the food
          categories. The Pantry shows them as a grid three tiles
          wide; the List tab's catalog shows them as one row that
@@ -3906,7 +4001,7 @@
          pantry item PLUS the common grocery items below, so a category
          always has fresh things to add even when the pantry already
          holds most of it. loc is where a tapped item lands by default. */
-      const CATALOG_DEFAULT_LOC = { 'Produce': 'fridge', 'Meat & Seafood': 'deep', 'Dairy & Eggs': 'fridge', 'Pantry Staples': 'pantry', 'Prepared & Frozen': 'kitchen', 'Baking & Breakfast': 'pantry', 'Snacks & Sweets': 'pantry', 'Drinks': 'garage' };
+      const CATALOG_DEFAULT_LOC = { 'Produce': 'fridge', 'Meat': 'deep', 'Seafood': 'deep', 'Dairy & Eggs': 'fridge', 'Pantry Staples': 'pantry', 'Frozen': 'kitchen', 'Baking': 'pantry', 'Breakfast': 'pantry', 'Snacks': 'pantry', 'Sweets': 'pantry', 'Drinks': 'garage', 'Household': 'pantry' };
       const CATALOG_EXTRA = [
         { n: 'Apples', c: 'Produce', term: 'apple' }, { n: 'Green apples', c: 'Produce', term: 'green apple' },
         { n: 'Sliced apples', c: 'Produce', term: 'apple slices' }, { n: 'Bananas', c: 'Produce', term: 'banana' },
@@ -3919,13 +4014,13 @@
         { n: 'Zucchini', c: 'Produce', term: 'zucchini' }, { n: 'Green onions', c: 'Produce', term: 'green onion' },
         { n: 'Cilantro', c: 'Produce', term: 'cilantro' }, { n: 'Parsley', c: 'Produce', term: 'parsley' },
         { n: 'Strawberries', c: 'Produce', term: 'strawberr' }, { n: 'Blueberries', c: 'Produce', term: 'blueberr' },
-        { n: 'Ground turkey', c: 'Meat & Seafood', term: 'ground turkey' }, { n: 'Chicken thighs', c: 'Meat & Seafood', term: 'chicken thigh' },
-        { n: 'Salmon fillets', c: 'Meat & Seafood', term: 'salmon' }, { n: 'Tilapia fillets', c: 'Meat & Seafood', term: 'tilapia' },
-        { n: 'Cod fillets', c: 'Meat & Seafood', term: 'cod' }, { n: 'Ground pork', c: 'Meat & Seafood', term: 'ground pork' },
-        { n: 'Pork chops', c: 'Meat & Seafood', term: 'pork chop' }, { n: 'Italian sausage', c: 'Meat & Seafood', term: 'italian sausage' },
-        { n: 'Sirloin steak', c: 'Meat & Seafood', term: 'sirloin steak' }, { n: 'T-bone steaks', c: 'Meat & Seafood', term: 't-bone steak' },
-        { n: 'Turkey breast', c: 'Meat & Seafood', term: 'turkey breast' },
-        { n: 'Catfish fillets', c: 'Meat & Seafood', term: 'catfish' }, { n: 'Crab meat', c: 'Meat & Seafood', term: 'crab' },
+        { n: 'Ground turkey', c: 'Meat', term: 'ground turkey' }, { n: 'Chicken thighs', c: 'Meat', term: 'chicken thigh' },
+        { n: 'Salmon fillets', c: 'Seafood', term: 'salmon' }, { n: 'Tilapia fillets', c: 'Seafood', term: 'tilapia' },
+        { n: 'Cod fillets', c: 'Seafood', term: 'cod' }, { n: 'Ground pork', c: 'Meat', term: 'ground pork' },
+        { n: 'Pork chops', c: 'Meat', term: 'pork chop' }, { n: 'Italian sausage', c: 'Meat', term: 'italian sausage' },
+        { n: 'Sirloin steak', c: 'Meat', term: 'sirloin steak' }, { n: 'T-bone steaks', c: 'Meat', term: 't-bone steak' },
+        { n: 'Turkey breast', c: 'Meat', term: 'turkey breast' },
+        { n: 'Catfish fillets', c: 'Seafood', term: 'catfish' }, { n: 'Crab meat', c: 'Seafood', term: 'crab' },
         { n: 'Greek yogurt', c: 'Dairy & Eggs', term: 'yogurt' }, { n: 'Cottage cheese', c: 'Dairy & Eggs', term: 'cottage cheese' },
         { n: 'String cheese', c: 'Dairy & Eggs', term: 'string cheese' }, { n: 'Shredded cheddar', c: 'Dairy & Eggs', term: 'cheddar' },
         { n: 'Sliced American cheese', c: 'Dairy & Eggs', term: 'american cheese' }, { n: 'Half-and-half', c: 'Dairy & Eggs', term: 'half-and-half' },
@@ -3933,18 +4028,22 @@
         { n: 'Lentils', c: 'Pantry Staples', term: 'lentil' }, { n: 'Quinoa', c: 'Pantry Staples', term: 'quinoa' },
         { n: 'Canned diced tomatoes', c: 'Pantry Staples', term: 'diced tomatoes' }, { n: 'Soy sauce', c: 'Pantry Staples', term: 'soy sauce' },
         { n: 'Hot sauce', c: 'Pantry Staples', term: 'hot sauce' }, { n: 'Peanut butter', c: 'Pantry Staples', term: 'peanut butter' },
-        { n: 'Frozen pizza', c: 'Prepared & Frozen', term: 'pizza' }, { n: 'Ice cream', c: 'Prepared & Frozen', term: 'ice cream' },
-        { n: 'Frozen french fries', c: 'Prepared & Frozen', term: 'french fries' }, { n: 'Chicken pot pie', c: 'Prepared & Frozen', term: 'pot pie' },
-        { n: 'Pancake mix', c: 'Baking & Breakfast', term: 'pancake' }, { n: 'Granulated sugar', c: 'Baking & Breakfast', term: 'sugar' },
-        { n: 'Baking powder', c: 'Baking & Breakfast', term: 'baking powder' }, { n: 'Vanilla extract', c: 'Baking & Breakfast', term: 'vanilla' },
-        { n: 'Chocolate chips', c: 'Baking & Breakfast', term: 'chocolate chips' }, { n: 'Cereal', c: 'Baking & Breakfast', term: 'cereal' },
-        { n: 'Maple syrup', c: 'Baking & Breakfast', term: 'maple syrup' },
-        { n: 'Tortilla chips', c: 'Snacks & Sweets', term: 'tortilla chips' }, { n: 'Potato chips', c: 'Snacks & Sweets', term: 'potato chips' },
-        { n: 'Pretzels', c: 'Snacks & Sweets', term: 'pretzel' }, { n: 'Trail mix', c: 'Snacks & Sweets', term: 'trail mix' },
-        { n: 'Cookies', c: 'Snacks & Sweets', term: 'cookie' },
+        { n: 'Frozen pizza', c: 'Frozen', term: 'pizza' }, { n: 'Ice cream', c: 'Frozen', term: 'ice cream' },
+        { n: 'Frozen french fries', c: 'Frozen', term: 'french fries' }, { n: 'Chicken pot pie', c: 'Frozen', term: 'pot pie' },
+        { n: 'Pancake mix', c: 'Breakfast', term: 'pancake' }, { n: 'Granulated sugar', c: 'Baking', term: 'sugar' },
+        { n: 'Baking powder', c: 'Baking', term: 'baking powder' }, { n: 'Vanilla extract', c: 'Baking', term: 'vanilla' },
+        { n: 'Chocolate chips', c: 'Baking', term: 'chocolate chips' }, { n: 'Cereal', c: 'Breakfast', term: 'cereal' },
+        { n: 'Maple syrup', c: 'Breakfast', term: 'maple syrup' },
+        { n: 'Tortilla chips', c: 'Snacks', term: 'tortilla chips' }, { n: 'Potato chips', c: 'Snacks', term: 'potato chips' },
+        { n: 'Pretzels', c: 'Snacks', term: 'pretzel' }, { n: 'Trail mix', c: 'Snacks', term: 'trail mix' },
+        { n: 'Cookies', c: 'Sweets', term: 'cookie' },
         { n: 'Orange juice', c: 'Drinks', term: 'orange juice' }, { n: 'Apple juice', c: 'Drinks', term: 'apple juice' },
         { n: 'Coffee', c: 'Drinks', term: 'coffee' }, { n: 'Tea', c: 'Drinks', term: 'tea' },
-        { n: 'Sparkling water', c: 'Drinks', term: 'sparkling water' }, { n: 'Lemonade', c: 'Drinks', term: 'lemonade' }
+        { n: 'Sparkling water', c: 'Drinks', term: 'sparkling water' }, { n: 'Lemonade', c: 'Drinks', term: 'lemonade' },
+        { n: 'Toilet paper', c: 'Household', term: 'toilet paper' }, { n: 'Paper towels', c: 'Household', term: 'paper towels' },
+        { n: 'Dish soap', c: 'Household', term: 'dish soap' }, { n: 'Laundry detergent', c: 'Household', term: 'detergent' },
+        { n: 'Trash bags', c: 'Household', term: 'trash bags' }, { n: 'Hand soap', c: 'Household', term: 'hand soap' },
+        { n: 'Sponges', c: 'Household', term: 'sponge' }, { n: 'All-purpose cleaner', c: 'Household', term: 'cleaner' }
       ];
       const CATALOG_ITEMS = (function () {
         const out = []; const seen = {};
@@ -3966,20 +4065,19 @@
       });
       function catalogPickByKey(key) { return CATALOG_PICKS.filter(function (p) { return p.key === key; })[0] || null; }
       /* --- Subcategories -------------------------------------------------
-         A category is too broad to browse — Meat & Seafood > Beef >
+         A category is too broad to browse — Meat > Beef >
          Ribeye steaks beats one flat wall of every meat there is.
          Each category splits into subcategories, classified from the
          item's name. A def marked fallback is where the category's
          unmatched items land (Vegetables in Produce, Meals in
-         Prepared & Frozen); anything else unmatched is 'Other'.
+         Frozen); anything else unmatched is 'Other'.
          Array order is display order; matching skips the fallback
          def until nothing else claims the item. */
       const SUBCATS = {
-        'Meat & Seafood': [
+        'Meat': [
           { key: 'Beef', icon: 'beef', late: true, words: ['beef', 'ribeye', 'steak', 'filet', 'brisket', 'chuck', 'flank'] },
           { key: 'Pork', icon: 'pork', words: ['pork', 'bacon', 'ham', 'kielbasa', 'sausage', 'ribs', 'spam'] },
-          { key: 'Poultry', icon: 'poultry', words: ['chicken', 'turkey'] },
-          { key: 'Seafood', icon: 'seafood', words: ['salmon', 'shrimp', 'tuna', 'lobster', 'crab', 'cod', 'tilapia', 'catfish', 'barramundi', 'fish', 'fillet'] }
+          { key: 'Poultry', icon: 'poultry', words: ['chicken', 'turkey'] }
         ],
         'Produce': [
           { key: 'Fruit', icon: 'fruit', words: ['apple', 'banana', 'strawberr', 'blueberr', 'berr', 'lemon', 'lime', 'avocado', 'pineapple', 'pear', 'peach', 'grape', 'melon', 'orange'] },
@@ -4003,22 +4101,23 @@
           { key: 'Bread', icon: 'bread', words: ['sourdough', 'bread'] },
           { key: 'Snacks', icon: 'chips', words: ['popcorn'] }
         ],
-        'Prepared & Frozen': [
+        'Frozen': [
           { key: 'Meals', icon: 'meals', fallback: true, words: ['pizza', 'pot pie', 'tacos', 'pot stickers', 'yakisoba', 'spanakopita'] },
           { key: 'Breakfast', icon: 'breakfast', words: ['breakfast', 'frittata'] },
-          { key: 'Desserts', icon: 'desserts', words: ['ice cream', 'turnover'] },
+          { key: 'Desserts', icon: 'desserts', words: ['ice cream', 'turnover', 'popsicle'] },
           { key: 'Sides', icon: 'sides', words: ['fries'] }
         ],
-        'Baking & Breakfast': [
-          { key: 'Baking', icon: 'baking', words: ['flour', 'sugar', 'baking powder', 'vanilla', 'chocolate chips', 'cocoa', 'muffin mix'] },
-          { key: 'Breakfast', icon: 'breakfast', words: ['cereal', 'pancake', 'oatmeal', 'muffin', 'maple', 'oats'] },
-          { key: 'Spices', icon: 'spices', words: ['seasoning', 'old bay', 'spice'] }
+        'Baking': [
+          { key: 'Baking', icon: 'baking', words: ['flour', 'sugar', 'baking powder', 'vanilla', 'chocolate chips', 'cocoa', 'muffin mix', 'mix'] }
         ],
-        'Snacks & Sweets': [
-          { key: 'Chips', icon: 'chips', words: ['chips', 'pretzel', 'cracker', 'popcorn', 'trail mix'] },
-          { key: 'Frozen', icon: 'frozen', words: ['popsicle', 'ice cream'] },
-          { key: 'Sweets', icon: 'sweets', words: ['cookie', 'strudel', 'candy', 'chocolate'] },
-          { key: 'Drinks', icon: 'drinks', words: ['drink'] }
+        'Breakfast': [
+          { key: 'Breakfast', icon: 'breakfast', words: ['cereal', 'pancake', 'oatmeal', 'muffin', 'maple', 'oats', 'egg bites', 'cocoa'] }
+        ],
+        'Snacks': [
+          { key: 'Chips', icon: 'chips', words: ['chips', 'pretzel', 'cracker', 'popcorn', 'trail mix'] }
+        ],
+        'Sweets': [
+          { key: 'Sweets', icon: 'sweets', words: ['cookie', 'strudel', 'candy', 'chocolate'] }
         ],
         'Drinks': [
           { key: 'Beer', icon: 'beer', words: ['beer'] },
@@ -4345,20 +4444,37 @@
          per-food IngredientArt portraits in the catalog, list,
          pantry and picker) — tiles only need to read at a glance. */
       const CAT_TINTS = {
-        'All': '#ece1c9', 'Meat & Seafood': '#f2dcd2', 'Produce': '#dfe9d2',
-        'Prepared & Frozen': '#d9e7ec', 'Pantry Staples': '#f0e4c6',
-        'Dairy & Eggs': '#f7ebc8', 'Baking & Breakfast': '#f0dfc2',
-        'Snacks & Sweets': '#f4dde6', 'Drinks': '#ddefe6'
+        'All': '#ece1c9', 'Meat': '#f2dcd2', 'Seafood': '#d3e6ea', 'Produce': '#dfe9d2',
+        'Frozen': '#d9e7ec', 'Pantry Staples': '#f0e4c6',
+        'Dairy & Eggs': '#f7ebc8', 'Baking': '#f0dfc2', 'Breakfast': '#ffe6bd',
+        'Snacks': '#f4dde6', 'Sweets': '#f3d3e0', 'Drinks': '#ddefe6', 'Household': '#e2e7d8'
+      };
+      /* Dark version of each tile's own background color — the
+         stroke drawn around a tile while it is pressed/selected.
+         Each entry is the darker shade of the CAT_TINTS color
+         directly above it, in the same color family. */
+      const CAT_TINT_DARK = {
+        'All': '#8f7c4f', 'Meat': '#9e5a3c', 'Seafood': '#3f7180', 'Produce': '#5c7a3d',
+        'Frozen': '#4a758c', 'Pantry Staples': '#8f7a38',
+        'Dairy & Eggs': '#9c7f2a', 'Baking': '#8f6a34', 'Breakfast': '#a66e14',
+        'Snacks': '#9e4f6a', 'Sweets': '#96455f', 'Drinks': '#35785a', 'Household': '#5f7442'
       };
       function CategoryArt({ cat }) {
         let motif;
-        if (cat === 'Meat & Seafood') {
+        if (cat === 'Meat') {
           motif = h(React.Fragment, null,
-            h('ellipse', { cx: '33', cy: '40', rx: '17', ry: '13', fill: '#b54a2d' }),
-            h('ellipse', { cx: '33', cy: '40', rx: '10', ry: '7.5', fill: '#d98a6a' }),
-            h('circle', { cx: '28', cy: '36', r: '3', fill: '#f6ecd9' }),
-            h('path', { d: 'M52 40c8-9 18-13 27-13-3 4-3 9 0 13-9 0-19-4-27-13Z', fill: '#33626b' }),
-            h('circle', { cx: '61', cy: '37', r: '2', fill: '#f6ecd9' })
+            h('ellipse', { cx: '48', cy: '40', rx: '21', ry: '16', fill: '#b54a2d' }),
+            h('ellipse', { cx: '48', cy: '40', rx: '12.5', ry: '9.5', fill: '#d98a6a' }),
+            h('circle', { cx: '42', cy: '35', r: '3.6', fill: '#f6ecd9' }),
+            h('path', { d: 'M33 48a17 12 0 0 0 12 6M58 31a17 12 0 0 1 6 8', fill: 'none', stroke: '#d98a6a', strokeWidth: '2.2', 'stroke-linecap': 'round', opacity: '.8' })
+          );
+        } else if (cat === 'Seafood') {
+          motif = h(React.Fragment, null,
+            h('path', { d: 'M62 40c9-10 19-15 29-15-3.5 4.5-3.5 10.5 0 15-10 0-20-5-29-15Z', fill: '#33626b' }),
+            h('path', { d: 'M14 40c9-11 21-16 33-16 11 0 20 6 26 16-6 10-15 16-26 16-12 0-24-5-33-16Z', fill: '#5b8a96' }),
+            h('circle', { cx: '30', cy: '36', r: '3.2', fill: '#f6ecd9' }),
+            h('circle', { cx: '30', cy: '36', r: '1.6', fill: '#33312e' }),
+            h('path', { d: 'M44 27c3.5 5 3.5 21 0 26', fill: 'none', stroke: '#33626b', strokeWidth: '2.6', 'stroke-linecap': 'round' })
           );
         } else if (cat === 'Produce') {
           motif = h(React.Fragment, null,
@@ -4367,7 +4483,7 @@
             h('path', { d: 'M63 13c-2 5-2 9 0 13M69 12c1 5 0 10-2 13M57 14c-3 5-4 9-3 12', fill: 'none', stroke: '#527a4e', strokeWidth: '2.5', 'stroke-linecap': 'round' }),
             h('path', { d: 'M54 27h14l-5.5 25a2.5 2.5 0 0 1-5 0Z', fill: '#d96a06' })
           );
-        } else if (cat === 'Prepared & Frozen') {
+        } else if (cat === 'Frozen') {
           motif = h(React.Fragment, null,
             h('path', { d: 'M27 25l6-8h30l6 8Z', fill: '#a8c8d8' }),
             h('path', { d: 'M27 25h42v30a2 2 0 0 1-2 2H29a2 2 0 0 1-2-2Z', fill: '#7fa8bd' }),
@@ -4392,19 +4508,36 @@
             h('circle', { cx: '63', cy: '47', r: '2.2', fill: '#c5912e' }),
             h('circle', { cx: '78', cy: '35', r: '1.8', fill: '#c5912e' })
           );
-        } else if (cat === 'Baking & Breakfast') {
+        } else if (cat === 'Baking') {
           motif = h(React.Fragment, null,
-            h('path', { d: 'M22 40a15 11 0 0 1 30 0v10a2 2 0 0 1-2 2H24a2 2 0 0 1-2-2Z', fill: '#c98a45' }),
-            h('path', { d: 'M30 33l5 4M39 31l5 4', fill: 'none', stroke: '#8a5a33', strokeWidth: '2.2', 'stroke-linecap': 'round' }),
-            h('path', { d: 'M71 57V27', fill: 'none', stroke: '#c5912e', strokeWidth: '2.5', 'stroke-linecap': 'round' }),
-            h('g', { fill: '#e3b851' },
-              h('ellipse', { cx: '66', cy: '30', rx: '3', ry: '5.5', transform: 'rotate(-24 66 30)' }),
-              h('ellipse', { cx: '76', cy: '30', rx: '3', ry: '5.5', transform: 'rotate(24 76 30)' }),
-              h('ellipse', { cx: '66', cy: '41', rx: '3', ry: '5.5', transform: 'rotate(-24 66 41)' }),
-              h('ellipse', { cx: '76', cy: '41', rx: '3', ry: '5.5', transform: 'rotate(24 76 41)' }),
-              h('ellipse', { cx: '71', cy: '21', rx: '3', ry: '5.5' }))
+            h('path', { d: 'M26 24h19v7H26Z', fill: '#8a5a33' }),
+            h('path', { d: 'M27 31h17v25a3 3 0 0 1-3 3H30a3 3 0 0 1-3-3Z', fill: '#e8dcc0' }),
+            h('ellipse', { cx: '35.5', cy: '45', rx: '6', ry: '7', fill: '#c5912e' }),
+            h('path', { d: 'M35.5 41v8M32 44.5l3.5 2 3.5-2', fill: 'none', stroke: '#f6ecd9', strokeWidth: '1.6', 'stroke-linecap': 'round' }),
+            h('g', { transform: 'rotate(24 68 38)' },
+              h('rect', { x: '52', y: '34.5', width: '9', height: '6', rx: '3', fill: '#8a5a33' }),
+              h('rect', { x: '75', y: '34.5', width: '9', height: '6', rx: '3', fill: '#8a5a33' }),
+              h('rect', { x: '60', y: '33', width: '16', height: '9', rx: '4.5', fill: '#c98a45' }))
           );
-        } else if (cat === 'Snacks & Sweets') {
+        } else if (cat === 'Breakfast') {
+          motif = h(React.Fragment, null,
+            h('path', { d: 'M62 34h18a4 4 0 0 1 0 8H62Z', fill: '#45403a' }),
+            h('circle', { cx: '42', cy: '38', r: '21', fill: '#45403a' }),
+            h('circle', { cx: '42', cy: '38', r: '16.5', fill: '#5d574e' }),
+            h('path', { d: 'M33 30c4-3 8 1 11-1 5-3 10 2 9 6-1 5-6 4-8 7-2 4-9 4-12 1-4-3-4-10 0-13Z', fill: '#fffdf7' }),
+            h('circle', { cx: '43', cy: '37', r: '6', fill: '#e8a13b' }),
+            h('ellipse', { cx: '41', cy: '35', rx: '2.2', ry: '1.6', fill: '#f2cd6b' })
+          );
+        } else if (cat === 'Snacks') {
+          motif = h(React.Fragment, null,
+            h('rect', { x: '28', y: '16', width: '40', height: '42', rx: '5', fill: '#e3b851' }),
+            h('rect', { x: '28', y: '16', width: '40', height: '7', fill: '#c5912e' }),
+            h('rect', { x: '28', y: '51', width: '40', height: '7', fill: '#c5912e' }),
+            h('circle', { cx: '48', cy: '37', r: '10.5', fill: '#f6ecd9' }),
+            h('path', { d: 'M41 41a9 7 0 0 1 3-9l9 4a9 7 0 0 1-3 9Z', fill: '#d96a06' }),
+            h('path', { d: 'M44 33.5l7 3.5', stroke: '#b54a06', strokeWidth: '1.6', 'stroke-linecap': 'round' })
+          );
+        } else if (cat === 'Sweets') {
           motif = h(React.Fragment, null,
             h('path', { d: 'M25 39l-11-7v14Z', fill: '#d98a6a' }),
             h('path', { d: 'M45 39l11-7v14Z', fill: '#d98a6a' }),
@@ -4414,6 +4547,17 @@
             h('g', { fill: '#5d3a1a' },
               h('circle', { cx: '62', cy: '36', r: '1.8' }), h('circle', { cx: '71', cy: '39', r: '1.8' }),
               h('circle', { cx: '65', cy: '46', r: '1.8' }), h('circle', { cx: '72', cy: '47', r: '1.5' }))
+          );
+        } else if (cat === 'Household') {
+          motif = h(React.Fragment, null,
+            h('ellipse', { cx: '32', cy: '24', rx: '13', ry: '5', fill: '#fffdf7' }),
+            h('path', { d: 'M19 24v26a13 5 0 0 0 26 0V24', fill: '#f3efe2' }),
+            h('ellipse', { cx: '32', cy: '24', rx: '6', ry: '2.4', fill: '#d9d0bf' }),
+            h('path', { d: 'M45 30c6 2 8 6 8 12v10H45Z', fill: '#fffdf7' }),
+            h('path', { d: 'M60 22h7v6h-7Z', fill: '#33626b' }),
+            h('path', { d: 'M56 28h15l3-5h8v5h-9l-2 4v24a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3Z', fill: '#7fa8bd' }),
+            h('rect', { x: '59', y: '40', width: '9', height: '11', rx: '1.5', fill: '#f6ecd9' }),
+            h('g', { stroke: '#eef6f9', strokeWidth: '2', 'stroke-linecap': 'round' }, h('path', { d: 'M63.5 43v5' }), h('path', { d: 'M61 44.5l5 2' }), h('path', { d: 'M66 44.5l-5 2' }))
           );
         } else if (cat === 'Drinks') {
           motif = h(React.Fragment, null,
@@ -4457,6 +4601,14 @@
            boxes, juice cartons) differ by label color AND the little
            picture on the label, the way real packaging does. */
         const rules = [
+          ['toiletpaper', ['toilet paper']],
+          ['papertowels', ['paper towel']],
+          ['dishsoap', ['dish soap']],
+          ['detergent', ['detergent', 'laundry']],
+          ['trashbags', ['trash bag']],
+          ['handsoap', ['hand soap']],
+          ['sponges', ['sponge']],
+          ['cleaner', ['cleaner']],
           ['cone', ['ice cream']],
           ['pizza', ['pizza']],
           ['pasta-yakisoba', ['yakisoba']],
@@ -4909,7 +5061,74 @@
         const key = ingredientMotifKey(name);
         if (!key) return h(CategoryArt, { cat: cat });
         let m;
-        if (key === 'can-chicken') { m = motifCan('#c5912e', 'chicken');
+        if (key === 'toiletpaper') {
+          /* A toilet paper roll with its loose sheet hanging. */
+          m = h(React.Fragment, null,
+            h('ellipse', { cx: '44', cy: '22', rx: '17', ry: '7', fill: '#fffdf7' }),
+            h('path', { d: 'M27 22v28a17 7 0 0 0 34 0V22', fill: '#f3efe2' }),
+            h('ellipse', { cx: '44', cy: '22', rx: '7.5', ry: '3', fill: '#d9d0bf' }),
+            h('ellipse', { cx: '44', cy: '22', rx: '3.4', ry: '1.4', fill: '#a5762a' }),
+            h('path', { d: 'M61 26c6 3 9 8 9 15v17H61Z', fill: '#fffdf7', stroke: '#e3ddcb', strokeWidth: '1.5' }),
+            h('path', { d: 'M61 44h9', fill: 'none', stroke: '#d9d0bf', strokeWidth: '1.6', strokeDasharray: '3 3' }));
+        } else if (key === 'papertowels') {
+          /* A taller kitchen roll, one sheet torn halfway off. */
+          m = h(React.Fragment, null,
+            h('ellipse', { cx: '40', cy: '16', rx: '15', ry: '6', fill: '#fffdf7' }),
+            h('path', { d: 'M25 16v36a15 6 0 0 0 30 0V16', fill: '#f3efe2' }),
+            h('ellipse', { cx: '40', cy: '16', rx: '6.5', ry: '2.6', fill: '#d9d0bf' }),
+            h('ellipse', { cx: '40', cy: '16', rx: '3', ry: '1.2', fill: '#a5762a' }),
+            h('path', { d: 'M55 20c7 3 10 8 10 14v8H55Z', fill: '#fffdf7', stroke: '#e3ddcb', strokeWidth: '1.5' }),
+            h('path', { d: 'M55 33h10', fill: 'none', stroke: '#d9d0bf', strokeWidth: '1.6', strokeDasharray: '3 3' }));
+        } else if (key === 'dishsoap') {
+          /* A dish soap bottle with a pump top and bubbles. */
+          m = h(React.Fragment, null,
+            h('path', { d: 'M44 14h10v5H44Z', fill: '#33626b' }),
+            h('path', { d: 'M49 8h17a3 3 0 0 1 3 3v3h-6v-2H49Z', fill: '#33626b' }),
+            h('path', { d: 'M42 19h14l4 7v29a5 5 0 0 1-5 5H43a5 5 0 0 1-5-5V26Z', fill: '#7fb069' }),
+            h('rect', { x: '41', y: '34', width: '16', height: '15', rx: '2', fill: '#f6ecd9' }),
+            h('path', { d: 'M49 38c3 3.4 4.6 5.6 4.6 7.6a4.6 4.6 0 1 1-9.2 0c0-2 1.6-4.2 4.6-7.6Z', fill: '#7fa8bd' }),
+            h('g', { fill: '#cfe6ef' }, h('circle', { cx: '70', cy: '24', r: '3.4' }), h('circle', { cx: '76', cy: '33', r: '2.4' }), h('circle', { cx: '68', cy: '40', r: '1.8' })));
+        } else if (key === 'handsoap') {
+          /* A hand soap pump bottle — squatter, amber, foaming pump. */
+          m = h(React.Fragment, null,
+            h('path', { d: 'M43 16h12v5H43Z', fill: '#8a5a33' }),
+            h('path', { d: 'M49 9h16a3 3 0 0 1 3 3v3h-6v-2H49Z', fill: '#8a5a33' }),
+            h('path', { d: 'M40 21h18l3 6v28a5 5 0 0 1-5 5H42a5 5 0 0 1-5-5V27Z', fill: '#d9a05a' }),
+            h('rect', { x: '41', y: '36', width: '16', height: '14', rx: '2', fill: '#f6ecd9' }),
+            h('circle', { cx: '49', cy: '43', r: '4', fill: '#fffdf7', stroke: '#d9d0bf', strokeWidth: '1.2' }),
+            h('g', { fill: '#fffdf7', stroke: '#d9d0bf', strokeWidth: '1' }, h('circle', { cx: '72', cy: '18', r: '3' }), h('circle', { cx: '77', cy: '25', r: '2.2' })));
+        } else if (key === 'detergent') {
+          /* A laundry jug with a handle and a measuring cap. */
+          m = h(React.Fragment, null,
+            h('rect', { x: '30', y: '12', width: '12', height: '7', rx: '2', fill: '#b54a2d' }),
+            h('path', { d: 'M28 19h16l4 6c8-3 16 1 18 9l4 21a5 5 0 0 1-5 6H33a5 5 0 0 1-5-5Z', fill: '#33626b' }),
+            h('path', { d: 'M50 30c4-2 9 0 10 5', fill: 'none', stroke: '#f6ecd9', strokeWidth: '3.4', 'stroke-linecap': 'round' }),
+            h('rect', { x: '34', y: '38', width: '20', height: '16', rx: '2', fill: '#f6ecd9' }),
+            h('path', { d: 'M38 48a8 6 0 0 1 12-4', fill: 'none', stroke: '#7fa8bd', strokeWidth: '2.2', 'stroke-linecap': 'round' }),
+            h('circle', { cx: '40', cy: '44', r: '1.8', fill: '#7fa8bd' }));
+        } else if (key === 'trashbags') {
+          /* A box of trash bags, one white bag tied and puffed beside it. */
+          m = h(React.Fragment, null,
+            h('path', { d: 'M24 24h30v34a3 3 0 0 1-3 3H27a3 3 0 0 1-3-3Z', fill: '#45403a' }),
+            h('path', { d: 'M24 24h30v8H24Z', fill: '#5d574e' }),
+            h('rect', { x: '29', y: '38', width: '20', height: '15', rx: '2', fill: '#f6ecd9' }),
+            h('path', { d: 'M33 49c1.5-3.5 3.5-5 6-6 2.5 1 4.5 2.5 6 6-4 1.6-8 1.6-12 0Z', fill: '#8a8578' }),
+            h('path', { d: 'M66 26l4-6 4 6M70 20v-4', fill: 'none', stroke: '#8a8578', strokeWidth: '2.4', 'stroke-linecap': 'round' }),
+            h('path', { d: 'M60 30c-3 8-3 18 1 26a5 5 0 0 0 5 3h8a5 5 0 0 0 5-3c4-8 4-18 1-26-3-2-7-2-10 0-3-2-7-2-10 0Z', fill: '#eef0e6', stroke: '#cfd4c2', strokeWidth: '1.6' }));
+        } else if (key === 'sponges') {
+          /* Two stacked sponges, yellow over green scour side. */
+          m = h(React.Fragment, null,
+            h('path', { d: 'M24 40h48v9a4 4 0 0 1-4 4H28a4 4 0 0 1-4-4Z', fill: '#527a4e' }),
+            h('rect', { x: '24', y: '22', width: '48', height: '18', rx: '4', fill: '#e8c33a' }),
+            h('g', { fill: '#c9a227' }, h('circle', { cx: '34', cy: '29', r: '2.2' }), h('circle', { cx: '46', cy: '33', r: '1.8' }), h('circle', { cx: '58', cy: '28', r: '2.4' }), h('circle', { cx: '65', cy: '34', r: '1.6' }), h('circle', { cx: '40', cy: '36', r: '1.4' })));
+        } else if (key === 'cleaner') {
+          /* A spray bottle with a trigger head. */
+          m = h(React.Fragment, null,
+            h('path', { d: 'M38 14h26l6 6-3 4H52l-3-4H42v6h-4Z', fill: '#b54a2d' }),
+            h('path', { d: 'M42 26h8l3 6v25a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4V32Z', fill: '#7fa8bd' }),
+            h('rect', { x: '40.5', y: '40', width: '11', height: '13', rx: '1.6', fill: '#f6ecd9' }),
+            h('g', { stroke: '#a8c8d8', strokeWidth: '2', 'stroke-linecap': 'round' }, h('path', { d: 'M74 12l6-3M75 18h7M74 24l6 3' })));
+        } else if (key === 'can-chicken') { m = motifCan('#c5912e', 'chicken');
         } else if (key === 'can-pineapple') { m = motifCan('#e8a91c', 'pineapple');
         } else if (key === 'can-pears') { m = motifCan('#7d9b57', 'pear');
         } else if (key === 'can-dicedtomato') { m = motifCan('#b54a2d', 'dicedtomato');
@@ -6235,12 +6454,12 @@
          sideways with the browser's own scrolling — the List tab's
          catalog, the way it was before, because one panning row is
          faster to shop from. */
-      function CategoryRibbon({ cats, active, onSelect, ariaLabel, heading, badges, layout }) {
+      function CategoryRibbon({ id, cats, active, onSelect, ariaLabel, heading, badges, layout }) {
         const track = h('div', {
           className: 'cat-ribbon-track', role: 'group',
           'aria-label': ariaLabel
         },
-          h('div', { className: 'cat-ribbon-set' + (layout === 'row' ? ' cat-ribbon-set--row' : '') },
+          h('div', { className: 'cat-ribbon-set' + (layout === 'row' ? ' cat-ribbon-set--row' : ''), 'data-ribbon-scroll': id || undefined },
             cats.map(function (item) {
               const isActive = active === item.value;
               const badge = badges && badges[item.value] ? badges[item.value] : null;
@@ -6251,7 +6470,7 @@
                 'aria-label': item.aria,
                 onClick: function () { onSelect(item.value); }
               },
-                h('span', { className: 'cat-tile-art', style: { background: CAT_TINTS[item.art] || '#ece1c9' } },
+                h('span', { className: 'cat-tile-art', style: { background: CAT_TINTS[item.art] || '#ece1c9', '--tile-dark': CAT_TINT_DARK[item.art] || '#6b5a3e' } },
                   h(CategoryArt, { cat: item.art })
                 ),
                 h('span', { className: 'cat-tile-label' }, item.label),
@@ -6324,12 +6543,23 @@
         const [hiddenIds,setHiddenIds]=React.useState([]);
         const [noRecChecked,setNoRecChecked]=React.useState({});
         const [view,setView]=React.useState('cook');
-        /* Inside Recipes, two features: 'book' — the Cookbook,
-           the notepad alone on screen — and 'browse' — the Recipe
-           browser. They are switched, never stacked: the book is
-           one page, full screen, no scroll, and the browser is
-           reached from the Cookbook index, not by scrolling. */
-        const [recipesMode,setRecipesMode]=React.useState('book');
+        /* Four tabs: 'shop' (List), 'plan' (Pantry), 'cook'
+           (Cookbook — the week planner above the book of saved
+           recipes) and 'browse' (Browse — the recipe browser on
+           its own tab). recipesMode is derived from the tab for
+           the book machinery: the browser's deck decides swipes,
+           the Cookbook's deck turns pages. */
+        const recipesMode=view==='browse'?'browse':'book';
+        /* Red change dots: item keys changed INDIRECTLY (by an
+           action in another tab), per tab — shop: list line
+           uids, plan: pantry item names, cook: 'recipe:'+id and
+           'bucket:'+uid. tabFlags holds tab-level dots with no
+           viewable item (e.g. pantry removals). A tab's dot shows
+           while it has item dots or a flag; opening a tab clears
+           its flag, and viewing an item clears its dot. */
+        const [dots,setDots]=React.useState({shop:[],plan:[],cook:[],browse:[]});
+        const [tabFlags,setTabFlags]=React.useState({});
+        const [pendingSlot,setPendingSlot]=React.useState('');
         /* The split, as specified: the Cookbook holds the cook's
            saved pages; the Recipe browser is the community menu —
            recipes other cooks have shared online, flipped through
@@ -6552,7 +6782,69 @@
            flipping to it. Every other message keeps the full second:
            those carry information worth reading, not a confirmation. */
         function announce(message){const el=document.getElementById('toast');if(el){el.textContent=message;el.classList.add('show');}setToast(message);clearTimeout(timeout.current);const hold=message.indexOf(' added')>-1?400:1000;timeout.current=setTimeout(function(){const el2=document.getElementById('toast');if(el2){el2.textContent='';el2.classList.remove('show');}setToast('');},hold);}
-        function toggle(id,name){setSavedIds(function(ids){const exists=ids.indexOf(id)>-1;announce(exists?name+' removed from your Cookbook':name+' added to your Cookbook');return exists?ids.filter(function(x){return x!==id;}):ids.concat(id);});}
+        /* --- Red change dots ------------------------------------
+           markDots records an indirect change: it does nothing
+           when the change was made directly inside the target tab
+           itself (view===tab). markTabOnly is for changes with no
+           viewable item left (removals). clearDot runs when an
+           item has been viewed — the scanner below watches dotted
+           items with an IntersectionObserver, and a cookbook
+           page's dot clears when the book settles open on it. */
+        function markDots(tab,keys){
+          if(view===tab||!keys||!keys.length)return;
+          setDots(function(cur){
+            const merged=cur[tab].slice();let changed=false;
+            keys.forEach(function(k){if(merged.indexOf(k)===-1){merged.push(k);changed=true;}});
+            if(!changed)return cur;
+            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse};out[tab]=merged;return out;
+          });
+        }
+        function markTabOnly(tab){
+          if(view===tab)return;
+          setTabFlags(function(cur){if(cur[tab])return cur;const out=Object.assign({},cur);out[tab]=true;return out;});
+        }
+        function clearDot(tab,key){
+          setDots(function(cur){
+            if(cur[tab].indexOf(key)===-1)return cur;
+            const out={shop:cur.shop,plan:cur.plan,cook:cur.cook,browse:cur.browse};out[tab]=cur[tab].filter(function(k){return k!==key;});return out;
+          });
+        }
+        const dotClearRef=React.useRef(null);
+        dotClearRef.current=clearDot;
+        const dotBookWatch=React.useRef(null);
+        React.useEffect(function(){
+          if(dotBookWatch.current)return;
+          dotBookWatch.current=true;
+          window.addEventListener('booksettled',function(e){
+            if(e.detail&&dotClearRef.current)dotClearRef.current('cook','recipe:'+e.detail);
+          });
+        });
+        const dotObserverRef=React.useRef(null);
+        function scanDots(){
+          if(dotObserverRef.current){dotObserverRef.current.disconnect();dotObserverRef.current=null;}
+          const els=document.querySelectorAll('[data-dotkey]');
+          if(!els.length||typeof IntersectionObserver==='undefined')return;
+          const obs=new IntersectionObserver(function(entries){
+            entries.forEach(function(en){
+              if(!en.isIntersecting)return;
+              const pg=en.target.closest?en.target.closest('.recipe-page'):null;
+              if(pg&&!pg.classList.contains('is-current'))return;
+              const parts=(en.target.getAttribute('data-dotkey')||'').split('|');
+              if(parts.length===2)clearDot(parts[0],parts[1]);
+              obs.unobserve(en.target);
+            });
+          },{threshold:0.35});
+          dotObserverRef.current=obs;
+          els.forEach(function(el){obs.observe(el);});
+        }
+        React.useEffect(function(){setTimeout(scanDots,80);});
+        function tabHasDot(tab){return (dots[tab]&&dots[tab].length>0)||!!tabFlags[tab];}
+        function toggle(id,name){
+          const exists=savedIds.indexOf(id)>-1;
+          if(!exists&&view==='browse')markDots('cook',['recipe:'+id]);
+          if(exists&&view==='browse')markTabOnly('cook');
+          setSavedIds(function(ids){const has=ids.indexOf(id)>-1;announce(has?name+' removed from your Cookbook':name+' added to your Cookbook');return has?ids.filter(function(x){return x!==id;}):ids.concat(id);});
+        }
         /* The rating gate: the collective stars are visible to
            everyone, but a cook's own vote counts only after the
            full path — the recipe is in their Cookbook, its
@@ -6642,6 +6934,7 @@
           const recipe={id:'mine-'+mySeq.current+'-'+(name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'recipe'),name:name,category:draft.category,label:draft.method,time:draft.time.trim()||'~30 min',servings:draft.servings.trim()||'4',uses:'',art:artByCat[draft.category]||'sides',indexLabel:(recipes.length+myRecipes.length+1)+' / '+(shortByCat[draft.category]||'SIDES'),ingredients:ingredients,instructions:instructions,mine:true};
           setMyRecipes(function(cur){return cur.concat(recipe);});
           setSavedIds(function(ids){return ids.indexOf(recipe.id)>-1?ids:ids.concat(recipe.id);});
+          markDots('cook',['recipe:'+recipe.id]);
           if(shared)setSharedIds(function(ids){return ids.concat(recipe.id);});
           deckResetPending=true;
           setAddOpen(false);
@@ -6829,7 +7122,7 @@
           return 0;
         }
         function useUpFromPantry(item){
-          setView('cook');setCategory('All');setUseFirstOnly(false);setMode('useup');
+          setView('browse');setCategory('All');setUseFirstOnly(false);setMode('useup');
           setSortByMode(function(cur){return {useup:'useup',browse:cur.browse};});
           if(item.pick){setPicked([item.pick]);setPickGroup(item.c||'All');setQueryByMode(function(cur){return {useup:'',browse:cur.browse};});}
           else{const cp=CATALOG_PICKS.filter(function(x){return x.n===item.n;})[0];if(cp){setPicked([cp.key]);setPickGroup(item.c||'All');setQueryByMode(function(cur){return {useup:'',browse:cur.browse};});}else if(item.term){setPicked([]);setQueryByMode(function(cur){return {useup:item.term,browse:cur.browse};});}}
@@ -7039,6 +7332,7 @@
           setCookedIds(function(cur){return cur.indexOf(recipe.id)>-1?cur:cur.concat(recipe.id);});
           if(names.length){
             setPantryItems(function(cur){return cur.filter(function(it){return names.indexOf(it.n)===-1;});});
+            markTabOnly('plan');
             announce('Made '+recipe.name+' — removed '+names.length+' ingredient'+(names.length===1?'':'s')+' from the pantry');
           }else{
             announce(recipe.name+' marked as made — nothing left to remove');
@@ -7056,6 +7350,7 @@
           bucketSeq.current+=1;
           const entry={uid:'plan-'+bucketSeq.current,recipeId:recipe.id,label:recipe.name};
           setBucket(function(cur){return cur.concat(entry);});
+          markDots('cook',['bucket:'+entry.uid]);
           /* Planning never edits the pantry: anything this recipe
              needs that the pantry doesn't hold goes to the Shop list
              instead, tagged as coming from the plan. */
@@ -7074,7 +7369,33 @@
         function recipeInPlan(id){
           return bucket.some(function(e){return e.recipeId===id;})||Object.keys(weekPlan).some(function(k){return weekPlan[k]&&weekPlan[k].recipeId===id;});
         }
+        /* Filling an empty planner slot from Browse: the picked
+           recipe fills the slot, is saved to the Cookbook (the
+           wildcard rule), and its missing ingredients go to the
+           List — then the cook lands back on the Cookbook tab's
+           planner with that day open. */
+        function fillSlotFromBrowse(recipe){
+          const slotKey=pendingSlot;
+          const dayKey=slotKey.split('-')[0];
+          if(savedIds.indexOf(recipe.id)===-1)markDots('cook',['recipe:'+recipe.id]);
+          setSavedIds(function(ids){return ids.indexOf(recipe.id)>-1?ids:ids.concat(recipe.id);});
+          const existing=bucket.filter(function(e){return e.recipeId===recipe.id;})[0];
+          if(existing){moveEntryIntoSlot(existing,slotKey);}
+          else{
+            bucketSeq.current+=1;
+            const entry={uid:'plan-'+bucketSeq.current,recipeId:recipe.id,label:recipe.name};
+            setWeekPlan(function(cur){const next=Object.assign({},cur);next[slotKey]=entry;return next;});
+            const missing=pushMissingForRecipes([recipe]);
+            setListedIds(function(cur){return cur.indexOf(recipe.id)>-1?cur:cur.concat(recipe.id);});
+            announce(recipe.name+' planned \u2014 '+(missing?missing+' missing ingredient'+(missing===1?'':'s')+' sent to the List':'everything for it is in the pantry'));
+          }
+          setPendingSlot('');
+          setSlotPicker('');
+          setOpenDay(dayKey);
+          goView('cook');
+        }
         function togglePlan(recipe){
+          if(pendingSlot){fillSlotFromBrowse(recipe);return;}
           if(!recipeInPlan(recipe.id)){
             /* Adding to the plan plays the suck-into-the-icon
                animation on the live card first (see
@@ -7115,6 +7436,7 @@
             });
             return;
           }
+          markTabOnly('cook');
           setBucket(function(cur){return cur.filter(function(e){return e.recipeId!==recipe.id;});});
           setWeekPlan(function(cur){
             const keys=Object.keys(cur).filter(function(k){return cur[k]&&cur[k].recipeId===recipe.id;});
@@ -7596,7 +7918,7 @@
           setShopPick(Object.assign({},shopPick,{qty:String(next)}));
         }
         function addShopLine(line){
-          if(shopList.some(function(l){return l.n.toLowerCase()===line.n.toLowerCase();}))return false;
+          if(shopList.some(function(l){return l.n.toLowerCase()===line.n.toLowerCase();}))return null;
           shopSeq.current+=1;
           const full=Object.assign({},line,{uid:'shop-'+shopSeq.current,bought:null});
           setShopList(function(cur){
@@ -7606,7 +7928,7 @@
           /* The new line's category tile opens in "Your list", so
              the cook sees the line land instead of hunting for it. */
           setShopListCat(line.c||'All');
-          return true;
+          return full;
         }
         function confirmShopPick(entry){
           if(!shopPick||shopPick.name!==entry.n)return;
@@ -7726,6 +8048,7 @@
             stockIntoPantry(l,q,l.bought.unit||l.unit);
           });
           const left=shopList.length-boughtLines.length;
+          markDots('plan',boughtLines.map(function(l){return l.n;}));
           setShopList(function(cur){return cur.filter(function(l){return !l.bought;});});
           announce('Trip done — '+boughtLines.length+(boughtLines.length===1?' item':' items')+' moved into the pantry'+(left?'; '+left+' left on the list for next time':''));
         }
@@ -7745,13 +8068,15 @@
           });
         }
         function pushMissingForRecipes(list){
-          const added={};let n=0;
+          const added={};let n=0;const addedKeys=[];
           list.forEach(function(r){
             missingForRecipe(r,added).forEach(function(entry){
               added[entry.n.toLowerCase()]=true;
-              if(addShopLine({n:entry.n,c:entry.c,loc:entry.loc,term:entry.term,pick:entry.pick||undefined,qty:'1',unit:qtySpecFor(entry)[1],src:'From the week plan'}))n++;
+              const line=addShopLine({n:entry.n,c:entry.c,loc:entry.loc,term:entry.term,pick:entry.pick||undefined,qty:'1',unit:qtySpecFor(entry)[1],src:'From the week plan'});
+              if(line){n++;addedKeys.push(line.uid);}
             });
           });
+          markDots('shop',addedKeys);
           return n;
         }
         function planRecipesUnique(){
@@ -7920,7 +8245,8 @@
           shopList.length&&shopListCat==='All'?h('p',{className:'catalog-hint'},'Tap a category tile and just its items show here.'):null,
           shopShownLines.length?h('div',{className:'shop-items'},shopShownLines.map(function(line){
             const bought=!!line.bought;
-            return h('div',{key:line.uid,className:'shop-item'+(bought?' is-bought':'')},
+            return h('div',{key:line.uid,className:'shop-item'+(bought?' is-bought':''),'data-dotkey':dots.shop.indexOf(line.uid)>-1?('shop|'+line.uid):undefined},
+              dots.shop.indexOf(line.uid)>-1?h('span',{className:'change-dot','aria-hidden':'true'}):null,
               h('button',{type:'button',className:'shop-check','aria-pressed':bought,'aria-label':bought?('Uncheck '+line.n+' — not bought after all'):('Check off '+line.n+' — bought, into the cart'),onClick:function(){toggleBought(line);}},bought?'\u2713':''),
               h('span',{className:'shop-item-art',style:{background:CAT_TINTS[line.c]||'#ece1c9'}},h(IngredientArt,{name:line.n,term:line.term,cat:line.c})),
               h('div',{className:'shop-item-main'},
@@ -8033,7 +8359,8 @@
                 const usable=count>0;
                 const confirming=confirmRemove===item.n;
                 const multiSpot=Object.keys(item.s).length>1;
-                return h('div',{key:item.n,className:'pantry-item'+(usable?' is-usable':'')+(confirming?' is-confirming':''),role:usable?'button':undefined,tabIndex:usable?0:undefined,'aria-label':usable?'Find recipes that use up '+item.n:undefined,onClick:usable&&!confirming?function(){useUpFromPantry(item);}:undefined,onKeyDown:usable&&!confirming?function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();useUpFromPantry(item);}}:undefined},
+                return h('div',{key:item.n,className:'pantry-item'+(usable?' is-usable':'')+(confirming?' is-confirming':''),'data-dotkey':dots.plan.indexOf(item.n)>-1?('plan|'+item.n):undefined,role:usable?'button':undefined,tabIndex:usable?0:undefined,'aria-label':usable?'Find recipes that use up '+item.n:undefined,onClick:usable&&!confirming?function(){useUpFromPantry(item);}:undefined,onKeyDown:usable&&!confirming?function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();useUpFromPantry(item);}}:undefined},
+                  dots.plan.indexOf(item.n)>-1?h('span',{className:'change-dot','aria-hidden':'true'}):null,
                   h('div',{className:'pantry-item-top'},
                     h('span',{className:'pantry-item-art',style:{background:CAT_TINTS[item.c]||'#ece1c9'}},h(IngredientArt,{name:item.n,term:item.term,cat:item.c})),
                     h('span',{className:'pantry-item-name'},item.n),
@@ -8102,6 +8429,7 @@
                 h('span',{className:'slot-picker-item-meta'},entryMeta(bEntry))
               );
             })):h('p',{className:'slot-picker-empty'},'Potential meals is empty. Add recipes with the calendar + button on a card while browsing, or add a menu item above — then it can be picked here.'),
+            h('button',{type:'button',className:'slot-picker-browse',onClick:function(){setPendingSlot(slotKey);goView('browse');}},'Browse recipes to fill this slot'),
             h('button',{type:'button',className:'slot-picker-cancel',onClick:function(){setSlotPicker('');}},'Cancel')
           );
         }
@@ -8130,13 +8458,14 @@
             renderSlotPicker(day)
           );
         }
-        const plannerSection=h('div',{className:'planner'},
+        const plannerSection=h('div',{className:'planner',id:'week-planner'},
           h('p',{className:'plan-intro'},'Everything you add with the ',h('strong',null,'calendar + button'),' on a recipe card while browsing lands in ',h('strong',null,'Potential meals'),' first. Open a day below, tap one of its meal slots, and pick from the meals waiting here — the pick fills the slot and leaves the bucket. Tap the calendar button on a filled slot to save that meal to Google Calendar. The plan lasts for this preview session.'),
           h('section',{className:'bucket','aria-label':'Potential meals'},
             h('div',{className:'bucket-head'},h('h3',null,'Potential meals'),h('span',null,bucket.length+(bucket.length===1?' ITEM':' ITEMS')+' WAITING')),
             h('p',{className:'bucket-hint'},'These are the meals available to plan. Open a day in the week below, tap a meal slot, and choose from this list.'),
             bucket.length?h('div',{className:'bucket-items'},bucket.map(function(entry){
-              return h('div',{key:entry.uid,className:'bucket-item'},
+              return h('div',{key:entry.uid,className:'bucket-item','data-dotkey':dots.cook.indexOf('bucket:'+entry.uid)>-1?('cook|bucket:'+entry.uid):undefined},
+                dots.cook.indexOf('bucket:'+entry.uid)>-1?h('span',{className:'change-dot','aria-hidden':'true'}):null,
                 h('span',{className:'bucket-item-name'},entry.label),
                 h('span',{className:'bucket-item-meta'},entryMeta(entry)),
                 h('button',{type:'button',className:'bucket-item-x','aria-label':'Remove '+entry.label+' from potential meals',onClick:function(){removeBucketItem(entry.uid);}},'\u00d7')
@@ -8175,14 +8504,10 @@
            missing belongs on the Shop list, never straight into the
            pantry. The bridge row between them sends the whole plan's
            missing ingredients over in one tap. */
-        const planPantrySection=h('div',{className:'plan-pantry'},
-          plannerSection,
-          h('div',{className:'plan-missing-row'},
+        const planMissingRow=h('div',{className:'plan-missing-row'},
             h('p',{className:'plan-missing-note'},'Planning never touches the pantry itself. When a planned recipe needs something the pantry doesn\u2019t hold, that ingredient belongs on the List — it only becomes pantry when it\u2019s actually bought.'),
             h('button',{type:'button',className:'bucket-add-btn plan-missing-btn',disabled:planMissingCount()?undefined:'',onClick:pushAllMissing},planMissingCount()?('Send '+planMissingCount()+' missing ingredient'+(planMissingCount()===1?'':'s')+' to the List'):'The plan is stocked from the pantry')
-          ),
-          pantrySection
-        );
+          );
         const expiringPanel=h('section',{className:'expiring-panel','aria-label':'Expiring soon'},
           h('div',{className:'expiring-row'},
             h('button',{type:'button',className:'switch',role:'switch','aria-checked':expiringOn,'aria-label':'Expiring soon — rank recipes by the ingredients that need to go soon',onClick:function(){const next=!expiringOn;setExpiringOn(next);announce(next?'Expiring soon on — recipes ranked by how many expiring ingredients they use':'Expiring soon off');}},h('span',{className:'switch-knob','aria-hidden':'true'})),
@@ -8205,8 +8530,9 @@
            opens with the tab bar pinned at its top, every time —
            so a sideways swipe never appears to jump between a
            landing at the very top and one past the summary. */
-        const TAB_ORDER=['shop','plan','cook'];
+        const TAB_ORDER=['browse','shop','plan','cook'];
         function goView(next,viaSwipe){
+          setTabFlags(function(cur){if(!cur[next])return cur;const out=Object.assign({},cur);delete out[next];return out;});
           setView(next);
           if(viaSwipe){
             /* Jump to the top first (a known unstuck spot), measure
@@ -8566,18 +8892,13 @@
         }
         const bookSection=h('section',{className:'cookbook'+(bookList.length?'':' is-empty'),'aria-label':'Cookbook — your saved recipes, as pages in your book'},
             h('div',{className:'book-head',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},
-              h('div',{className:'tabs book-tabs',role:'tablist','aria-label':'Main sections',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},
-                h('button',{className:'tab tab--list',type:'button',role:'tab','aria-selected':view==='shop',onClick:function(){if(swipeJustHappened())return;goView('shop');}},h(ListIcon),'List'+(shopList.length?' · '+shopList.length:'')),
-                h('button',{className:'tab tab--pantry',type:'button',role:'tab','aria-selected':view==='plan',onClick:function(){if(swipeJustHappened())return;goView('plan');}},h(PantryIcon),'Pantry'+(bucket.length?' · '+bucket.length:'')),
-                h('button',{className:'tab tab--cook',type:'button',role:'tab','aria-selected':view==='cook',onClick:function(){if(swipeJustHappened())return;goView('cook');}},h(BookIcon),'Recipes')
-              ),
               h('div',{className:'book-title'},h('strong',null,bookFilterOn?'THE COOKBOOK · FILTERED':'THE COOKBOOK'),h('span',{className:'book-page-count','aria-live':'polite'},bookPages.length?('Page '+(Math.min(bookIndex,bookPages.length-1)+1)+' of '+bookPages.length):'No pages')),
               h('div',{className:'book-find'},
                 h('input',{className:'book-find-input',id:'book-search',type:'search',placeholder:'Search the Cookbook…','aria-label':'Search the Cookbook',autocomplete:'off',value:indexQuery,onInput:function(e){const v=e.target.value;deckResetPending=true;setIndexQuery(v);const others=(category!=='All'?1:0)+(useFirstOnly?1:0)+(method!=='All'?1:0)+(timeFilter!=='any'?1:0)+(minRating>0?1:0)+(picked.length?1:0);setBookFilterOn(!!v.trim()||others>0);}}),
                 h('button',{type:'button',className:'book-find-btn','aria-label':indexActiveCount?('Filter recipes, '+indexActiveCount+' active'):'Filter recipes',onClick:function(){setIndexOpen(true);}},'Filter',indexActiveCount?h('span',{className:'filter-count','aria-hidden':'true'},indexActiveCount+' on'):null)
               )
             ),
-            h('div',{className:'book-pages',tabindex:'0','aria-label':'Cookbook pages — swipe left or right to turn the page; tap a card to flip it over',onKeyDown:onBookKeyDown},bookPages.length?bookPages.map(function(recipe,pageIdx){return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id},h(RecipeCard,{key:recipe.id,recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:null,shareUi:shareUiFor(recipe,false),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,onOpenIndex:function(){setIndexOpen(true);},madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):bookList.length?h('div',{className:'empty-state'},h('h2',null,'No pages match your filters.'),h('p',null,'The index filters are hiding every page in your Cookbook — nothing in the book fits them all at once.'),h('button',{className:'primary-btn',type:'button',onClick:clearBookFilter},'Show all pages')):h('div',{className:'empty-state'},h('h2',null,'Your Cookbook is empty.'),h('p',null,'Recipes you save live here, as pages in your book. Open the Recipe browser and tap the bookmark on a card to add it here.'),h('button',{className:'primary-btn',type:'button',onClick:function(){setRecipesMode('browse');}},'Open the Recipe browser'))));
+            h('div',{className:'book-pages',tabindex:'0','aria-label':'Cookbook pages — swipe left or right to turn the page; tap a card to flip it over',onKeyDown:onBookKeyDown},bookPages.length?bookPages.map(function(recipe,pageIdx){const pageDotted=dots.cook.indexOf('recipe:'+recipe.id)>-1;return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id,'data-dotkey':pageDotted?('cook|recipe:'+recipe.id):undefined},pageDotted?h('span',{className:'change-dot','aria-hidden':'true'}):null,h(RecipeCard,{key:recipe.id,recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:null,shareUi:shareUiFor(recipe,false),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,onOpenIndex:function(){setIndexOpen(true);},madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):bookList.length?h('div',{className:'empty-state'},h('h2',null,'No pages match your filters.'),h('p',null,'The index filters are hiding every page in your Cookbook — nothing in the book fits them all at once.'),h('button',{className:'primary-btn',type:'button',onClick:clearBookFilter},'Show all pages')):h('div',{className:'empty-state'},h('h2',null,'Your Cookbook is empty.'),h('p',null,'Recipes you save live here, as pages in your book. Open the Recipe browser and tap the bookmark on a card to add it here.'),h('button',{className:'primary-btn',type:'button',onClick:function(){setView('browse');}},'Open the Recipe browser'))));
         /* The Cookbook index: a popup modal over the book — its
            table of contents. The cook sets a search and filters
            here, then clicks Filter: the popup closes and the book
@@ -8639,7 +8960,7 @@
               h('span',{className:'index-count','aria-live':'polite'},bookFilterList.length+' of '+bookList.length+' pages match'),
               indexActiveCount?h('button',{className:'clear-btn',type:'button',onClick:clearIndexFilters},'Clear'):null,
               bookFilterOn?h('button',{className:'clear-btn',type:'button',onClick:function(){clearBookFilter();setIndexOpen(false);}},'Show all pages'):null,
-              h('button',{type:'button',className:'filter-toggle',onClick:function(){setIndexOpen(false);setRecipesMode('browse');}},'Recipe browser'),
+              h('button',{type:'button',className:'filter-toggle',onClick:function(){setIndexOpen(false);setView('browse');}},'Recipe browser'),
               h('button',{type:'button',className:'primary-btn',onClick:function(){deckResetPending=true;setBookFilterOn(indexActiveCount>0);setIndexOpen(false);}},'Filter')
             )
           )
@@ -8716,14 +9037,16 @@
             )
           )
         );
+        const cookbookTabSection=h('div',{className:'cookbook-tab'},plannerSection,planMissingRow,bookSection);
         return h(React.Fragment,null,
-          view==='cook'?null:h('header',{className:'intro',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('div',{className:'intro-copy'},h('h1',null,'Dinner, kept beautifully.'),h('p',{className:'lede'},'Every recipe from the food use-up inventory, plus the original cards. Start from ingredients that need using up, or browse by dish — tap a card to flip it, and save favorites to your Cookbook.'))),
+          (view==='cook'||view==='browse')?null:h('header',{className:'intro',onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('div',{className:'intro-copy'},h('h1',null,'Dinner, kept beautifully.'),h('p',{className:'lede'},'Every recipe from the food use-up inventory, plus the original cards. Start from ingredients that need using up, or browse by dish — tap a card to flip it, and save favorites to your Cookbook.'))),
           h('div',{className:'toolbar'+(headerStuck?' is-stuck':''),onPointerDown:onTabBarDown,onPointerUp:onTabBarUp,onPointerCancel:onTabBarCancel},h('div',{className:'tabs',role:'tablist','aria-label':'Main sections'},
-            h('button',{className:'tab tab--list',type:'button',role:'tab','aria-selected':view==='shop',onClick:function(){if(swipeJustHappened())return;goView('shop');}},h(ListIcon),'List'+(shopList.length?' · '+shopList.length:'')),
-            h('button',{className:'tab tab--pantry',type:'button',role:'tab','aria-selected':view==='plan',onClick:function(){if(swipeJustHappened())return;goView('plan');}},h(PantryIcon),'Pantry'+(bucket.length?' · '+bucket.length:'')),
-            h('button',{className:'tab tab--cook',type:'button',role:'tab','aria-selected':view==='cook',onClick:function(){if(swipeJustHappened())return;goView('cook');}},h(BookIcon),'Recipes')
+            h('button',{className:'tab tab--browse',type:'button',role:'tab','aria-label':'Browse','aria-selected':view==='browse',onClick:function(){if(swipeJustHappened())return;goView('browse');}},h(OnlineIcon),tabHasDot('browse')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
+            h('button',{className:'tab tab--list',type:'button',role:'tab','aria-label':'List','aria-selected':view==='shop',onClick:function(){if(swipeJustHappened())return;goView('shop');}},h(ListIcon),tabHasDot('shop')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
+            h('button',{className:'tab tab--pantry',type:'button',role:'tab','aria-label':'Pantry','aria-selected':view==='plan',onClick:function(){if(swipeJustHappened())return;goView('plan');}},h(PantryIcon),tabHasDot('plan')?h('span',{className:'tab-dot','aria-hidden':'true'}):null),
+            h('button',{className:'tab tab--cook',type:'button',role:'tab','aria-label':'Cookbook','aria-selected':view==='cook',onClick:function(){if(swipeJustHappened())return;goView('cook');}},h(BookIcon),tabHasDot('cook')?h('span',{className:'tab-dot','aria-hidden':'true'}):null)
           )),
-          view==='shop'?shopSection:view==='plan'?planPantrySection:recipesMode==='browse'?h('section',{className:'recipe-browser','aria-label':'Recipe browser — the community menu: browse recipes other cooks have shared online'},h('div',{className:'browser-head'},h('div',{className:'browser-head-text'},h('h2',{className:'browser-title'},'Recipe browser'),h('p',{className:'browser-sub'},'The community menu: recipes other cooks have shared online. Flip through them one page at a time, just like the Cookbook. Swipe a card right to add it to your Cookbook, left to pass — saved there, it works offline. Check "do not recommend for me again" on a card before a left swipe and it leaves the menu for good. A card\u2019s stars are everyone\u2019s rating; yours counts only after you\u2019ve cooked the recipe. A lit globe on a card means the recipe is shared online. Add your own recipe here too, and choose: share it online for other cooks to save, or keep it as a local page in your Cookbook only.')),h('button',{type:'button',className:'filter-toggle',onClick:function(){setAddOpen(true);}},'Add your recipe'),h('button',{type:'button',className:'filter-toggle',onClick:function(){deckResetPending=true;setRecipesMode('book');}},'Cookbook')),expiringPanel,expiringOn?null:h('div',{className:'controls'},
+          view==='shop'?shopSection:view==='plan'?pantrySection:view==='browse'?h('section',{className:'recipe-browser','aria-label':'Recipe browser — the community menu: browse recipes other cooks have shared online'},pendingSlot?h('div',{className:'slot-banner'},h('span',null,'Filling a planner slot: tap the calendar + button on a recipe and it fills the slot — and is saved to your Cookbook.'),h('button',{type:'button',className:'slot-picker-browse',onClick:function(){setPendingSlot('');goView('cook');}},'Cancel — back to the planner')):null,h('div',{className:'browser-head'},h('div',{className:'browser-head-text'},h('h2',{className:'browser-title'},'Recipe browser'),h('p',{className:'browser-sub'},'The community menu: recipes other cooks have shared online. Flip through them one page at a time, just like the Cookbook. Swipe a card right to add it to your Cookbook, left to pass — saved there, it works offline. Check "do not recommend for me again" on a card before a left swipe and it leaves the menu for good. A card\u2019s stars are everyone\u2019s rating; yours counts only after you\u2019ve cooked the recipe. A lit globe on a card means the recipe is shared online. Add your own recipe here too, and choose: share it online for other cooks to save, or keep it as a local page in your Cookbook only.')),h('button',{type:'button',className:'filter-toggle',onClick:function(){setAddOpen(true);}},'Add your recipe'),h('button',{type:'button',className:'filter-toggle',onClick:function(){deckResetPending=true;goView('cook');}},'Cookbook')),expiringPanel,expiringOn?null:h('div',{className:'controls'},
             h('div',{className:'mode-row'},
               h('div',{className:'mode-toggle',role:'group','aria-label':'Search mode'},
                 h('button',{className:'mode-btn',type:'button','aria-pressed':mode==='useup',onClick:function(){switchMode('useup');}},'Use up ingredients'),
@@ -8739,13 +9062,13 @@
                 picked.length?h('button',{className:'clear-btn picker-clear',type:'button',onClick:function(){setPicked([]);}},'Clear picks'):null
               ),
               h('div',{className:'cat-stick'},
-              h(CategoryRibbon,{id:'picker',cats:PANTRY_RIBBON_CATS,active:pickGroup,ariaLabel:'Ingredient category — tap a category and its items appear directly beneath',badges:(function(){const b={};CATALOG_PICKS.forEach(function(cp){if(picked.indexOf(cp.key)>-1)b[cp.cat]='· '+((b[cp.cat]?parseInt(b[cp.cat].slice(2),10):0)+1)+' picked';});PICK_GROUPS.forEach(function(g){const map={'produce':'Produce','meat-seafood':'Meat & Seafood','cheese':'Dairy & Eggs'};const cat=map[g.key];const n=picked.filter(function(k){return g.keys.indexOf(k)>-1;}).length;if(n&&cat)b[cat]='· '+(((b[cat]?parseInt(b[cat].slice(2),10):0))+n)+' picked';});return b;})(),onSelect:function(v){setPickGroup(v);setPickSub('All');setPickShowAll(false);}}),
+              h(CategoryRibbon,{id:'picker',cats:PANTRY_RIBBON_CATS,active:pickGroup,ariaLabel:'Ingredient category — tap a category and its items appear directly beneath',badges:(function(){const b={};CATALOG_PICKS.forEach(function(cp){if(picked.indexOf(cp.key)>-1)b[cp.cat]='· '+((b[cp.cat]?parseInt(b[cp.cat].slice(2),10):0)+1)+' picked';});PICK_GROUPS.forEach(function(g){const map={'produce':'Produce','meat':'Meat','seafood':'Seafood','cheese':'Dairy & Eggs'};const cat=map[g.key];const n=picked.filter(function(k){return g.keys.indexOf(k)>-1;}).length;if(n&&cat)b[cat]='· '+(((b[cat]?parseInt(b[cat].slice(2),10):0))+n)+' picked';});return b;})(),onSelect:function(v){setPickGroup(v);setPickSub('All');setPickShowAll(false);}}),
               pickGroup!=='All'?h(SubcatStrip,{cat:pickGroup,active:pickSub,ariaLabel:'Subcategories of '+pickGroup,onSelect:function(sub){setPickSub(sub);setPickShowAll(false);}}):null,
               (function(){
                 const allPicks=(function(){
                   const needle=pickCatQuery.trim().toLowerCase();
                   const out=[];const seen={};const seenTerm={};
-                  const groupCatMap={'produce':'Produce','meat-seafood':'Meat & Seafood','cheese':'Dairy & Eggs'};
+                  const groupCatMap={'produce':'Produce','meat':'Meat','seafood':'Seafood','cheese':'Dairy & Eggs'};
                   PICK_GROUPS.forEach(function(g){
                     if(pickGroup!=='All'&&groupCatMap[g.key]!==pickGroup)return;
                     g.keys.forEach(function(k){const p=pickByKey(k);if(p&&!seen[p.label.toLowerCase()]){seen[p.label.toLowerCase()]=true;(p.terms||[p.term]).forEach(function(t){seenTerm[t]=true;});out.push({key:p.key,label:p.label,term:p.term,terms:p.terms,inPantry:true,n:p.label,cat:groupCatMap[g.key]});}});
@@ -8826,12 +9149,13 @@
           h('div',{className:'result-row'},
             h('p',{className:'result-count','aria-live':'polite'},expiringOn?('Showing '+gridList.length+' of '+baseList.length+' recipes on the community menu · ranked by expiring ingredients used, most first'):('Showing '+gridList.length+' of '+baseList.length+' recipes on the community menu'+(mode==='useup'&&picked.length?' · ranked by what they use up':''))),
             !expiringOn&&filtersActive?h('button',{className:'clear-btn',type:'button',onClick:clearFilters},'Clear search & filters'):null
-          ),h('section',{className:'cookbook browser-book','aria-label':'Recipe browser — flip through the community menu, recipes other cooks have shared online'},h('div',{className:'book-head'},h('div',{className:'book-title'},h('strong',null,'RECIPE BROWSER'),h('span',{className:'book-page-count','aria-live':'polite'},gridList.length?('Page '+(Math.min(bookIndex,gridList.length-1)+1)+' of '+gridList.length):'No recipes')),h('div',{className:'book-find'},h('input',{className:'book-find-input',id:'browser-search',type:'search',placeholder:'Search recipes…','aria-label':'Search recipes',autocomplete:'off',value:query,onInput:function(e){setQuery(e.target.value);}}),h('button',{type:'button',className:'book-find-btn','aria-expanded':filtersOpen,'aria-controls':'recipe-filters','aria-label':activeFilterCount?('Filters, '+activeFilterCount+' active'):'Filters',onClick:function(){setFiltersOpen(!filtersOpen);}},'Filter',activeFilterCount?h('span',{className:'filter-count','aria-hidden':'true'},activeFilterCount+' on'):null))),h('div',{className:'book-pages',tabindex:'0','aria-label':'Recipe browser pages — flick or scroll to flip through the recipes',onKeyDown:onBookKeyDown},gridList.length?gridList.map(function(recipe,pageIdx){return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id},h(RecipeCard,{key:recipe.id,recipe:recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:expiringOn&&expStatById[recipe.id]?('USES '+expStatById[recipe.id].count+' OF '+expUnits.length+' EXPIRING · '+expStatById[recipe.id].pct+'%'):null,shareUi:shareUiFor(recipe,true),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),swipeMode:'menu',noRec:!!noRecChecked[recipe.id],onToggleNoRec:function(checked){toggleNoRec(recipe.id,checked);},onSwipeDecision:function(dir){swipeDecision(recipe,dir);},onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):!baseList.length?h('div',{className:'empty-state'},h('h2',null,'Nothing on the menu right now.'),h('p',null,'Every shared recipe is already in your Cookbook. Take one out with its bookmark and it will show up here to browse — or add your own recipe and share it online.')):shownList.length?h('div',{className:'empty-state'},h('h2',null,'All in the week plan.'),h('p',null,'Every recipe on the community menu is already planned for this week — planned recipes live in Pantry until you take them back out.'),h('button',{className:'primary-btn',type:'button',onClick:function(){goView('plan');}},'Open the week plan')):expiringOn?h('div',{className:'empty-state'},h('h2',null,'Nothing here uses them.'),h('p',null,'No recipe on the community menu uses any of the ingredients that need to go soon. Turn Expiring soon off to browse everything.')):h('div',{className:'empty-state'},h('h2',null,'Nothing matches that.'),h('p',null,mode==='useup'&&query?'No recipe\u2019s ingredient list matches \u201c'+query+'\u201d. In Use up mode the search reads ingredients only \u2014 try an ingredient name, or switch to Browse dishes to search by dish.':'No recipes on the community menu fit the current search and filters. Try a different ingredient, or clear them and browse the whole menu.'),h('button',{className:'primary-btn',type:'button',onClick:clearFilters},'Clear search & filters'))))):bookSection,indexOpen?indexModal:null,addOpen?addModal:null
+          ),h('section',{className:'cookbook browser-book','aria-label':'Recipe browser — flip through the community menu, recipes other cooks have shared online'},h('div',{className:'book-head'},h('div',{className:'book-title'},h('strong',null,'RECIPE BROWSER'),h('span',{className:'book-page-count','aria-live':'polite'},gridList.length?('Page '+(Math.min(bookIndex,gridList.length-1)+1)+' of '+gridList.length):'No recipes')),h('div',{className:'book-find'},h('input',{className:'book-find-input',id:'browser-search',type:'search',placeholder:'Search recipes…','aria-label':'Search recipes',autocomplete:'off',value:query,onInput:function(e){setQuery(e.target.value);}}),h('button',{type:'button',className:'book-find-btn','aria-expanded':filtersOpen,'aria-controls':'recipe-filters','aria-label':activeFilterCount?('Filters, '+activeFilterCount+' active'):'Filters',onClick:function(){setFiltersOpen(!filtersOpen);}},'Filter',activeFilterCount?h('span',{className:'filter-count','aria-hidden':'true'},activeFilterCount+' on'):null))),h('div',{className:'book-pages',tabindex:'0','aria-label':'Recipe browser pages — flick or scroll to flip through the recipes',onKeyDown:onBookKeyDown},gridList.length?gridList.map(function(recipe,pageIdx){return h('div',{className:'recipe-page'+(pageIdx===bookIndex?' is-current':''),key:recipe.id,'data-recipe-id':recipe.id},h(RecipeCard,{key:recipe.id,recipe:recipe,leaving:leavingIds.indexOf(recipe.id)>-1,isSaved:savedIds.indexOf(recipe.id)>-1,inPlan:recipeInPlan(recipe.id),rating:ratings[recipe.id]||0,expiringBadge:expiringOn&&expStatById[recipe.id]?('USES '+expStatById[recipe.id].count+' OF '+expUnits.length+' EXPIRING · '+expStatById[recipe.id].pct+'%'):null,shareUi:shareUiFor(recipe,true),rateLocked:!canRate(recipe.id),collective:collectiveFor(recipe),swipeMode:'menu',noRec:!!noRecChecked[recipe.id],onToggleNoRec:function(checked){toggleNoRec(recipe.id,checked);},onSwipeDecision:function(dir){swipeDecision(recipe,dir);},onToggleSave:toggle,onRate:rate,onShare:shareRecipe,onTogglePlan:togglePlan,madeOpen:madeFor===recipe.id,madeMatches:pantryMatchesFor(recipe),madeExcluded:madeExcluded,onOpenMade:function(){openMade(recipe.id);},onCloseMade:closeMade,onExcludeMade:excludeMade,onConfirmMade:function(){confirmMade(recipe);}}));}):!baseList.length?h('div',{className:'empty-state'},h('h2',null,'Nothing on the menu right now.'),h('p',null,'Every shared recipe is already in your Cookbook. Take one out with its bookmark and it will show up here to browse — or add your own recipe and share it online.')):shownList.length?h('div',{className:'empty-state'},h('h2',null,'All in the week plan.'),h('p',null,'Every recipe on the community menu is already planned for this week — planned recipes live in the Cookbook planner until you take them back out.'),h('button',{className:'primary-btn',type:'button',onClick:function(){goView('cook');setTimeout(function(){jumpToAnchor('week-planner');},60);}},'Open the week plan')):expiringOn?h('div',{className:'empty-state'},h('h2',null,'Nothing here uses them.'),h('p',null,'No recipe on the community menu uses any of the ingredients that need to go soon. Turn Expiring soon off to browse everything.')):h('div',{className:'empty-state'},h('h2',null,'Nothing matches that.'),h('p',null,mode==='useup'&&query?'No recipe\u2019s ingredient list matches \u201c'+query+'\u201d. In Use up mode the search reads ingredients only \u2014 try an ingredient name, or switch to Browse dishes to search by dish.':'No recipes on the community menu fit the current search and filters. Try a different ingredient, or clear them and browse the whole menu.'),h('button',{className:'primary-btn',type:'button',onClick:clearFilters},'Clear search & filters'))))):cookbookTabSection,indexOpen?indexModal:null,addOpen?addModal:null
         );
       }
       ReactDOM.createRoot(document.getElementById('app')).render(App);
       syncHeaderStuck();
       syncToolbarHeight();
+      syncRibbonHeights();
     })();
   </script>
 
